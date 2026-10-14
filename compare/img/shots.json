@@ -1,0 +1,78 @@
+{
+ "at": "2026-10-14T20:20:13.861Z",
+ "newBase": "http://127.0.0.1:8940/appledental-demo/",
+ "report": [
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "home-full",
+   "height": 19214
+  },
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "home",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "implant",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "doctors",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "visit",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "pc",
+   "id": "pricing",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "home-full",
+   "height": 23995
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "home",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "implant",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "doctors",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "visit",
+   "ok": true
+  },
+  {
+   "side": "new",
+   "view": "mo",
+   "id": "pricing",
+   "ok": true
+  }
+ ]
+}

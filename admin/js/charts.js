@@ -15,7 +15,7 @@
     C = {
       v1: css('--viz-1', '#2D4155'), accent: css('--viz-accent', '#0A78B0'), muted: css('--viz-muted', '#B4BCC6'),
       ord: [css('--ord-1', '#9AA6B4'), css('--ord-2', '#6A7C92'), css('--ord-3', '#40556D'), css('--ord-4', '#132538')],
-      surface: css('--sheet', '#FCFAF6'), ink: css('--ink', '#132538'),
+      surface: css('--sheet', '#FFFFFF'), ink: css('--ink', '#132538'),
       fs: parseFloat(css('--fs-xs', '13.5')) || 13.5, // 차트 글자 크기(PC 13.5px · 1099px 이하 14px) — 글자 폭 어림에도 쓴다
     };
   }
