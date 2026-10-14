@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>홈페이지 리뉴얼 시안 소개 | 부천 사과나무치과병원</title>
+<meta name="description" content="부천 사과나무치과병원 홈페이지 리뉴얼 시안을 노트북·휴대폰 화면으로 살펴보고, 원본 사이트와 달라진 점과 실서비스 전환에 필요한 일을 정리한 소개 페이지입니다.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#F6F3EC">
+<meta name="color-scheme" content="light">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" type="image/png" href="../assets/img/brand/logo-symbol.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/css/site.css">
+<link rel="stylesheet" href="mockup.css">
+</head>
+<body class="mk">
+<a class="skip" href="#main">본문 바로가기</a>
+<main id="main" tabindex="-1">
+
+<!-- ① 표지 -->
+<section class="mk-cover" id="cover" aria-labelledby="mk-title">
+  <div class="wrap">
+    <div class="mk-cover__top">
+      <img class="mk-cover__logo" src="../assets/img/brand/logo-color.png" width="526" height="110" alt="부천 사과나무치과병원 공식 로고">
+      <p class="mk-cover__date">리뉴얼 시안 보고 <span aria-hidden="true">·</span> 2026년 10월</p>
+    </div>
+    <div class="mk-cover__grid">
+      <div class="mk-cover__text">
+        <h1 class="mk-cover__title" id="mk-title"><span class="mk-cover__name">부천 사과나무치과병원</span> <span class="mk-cover__main">홈페이지 리뉴얼 시안</span></h1>
+        <span class="brand-rule" aria-hidden="true"></span>
+        <p class="mk-cover__lead">환자와 AI 검색이 질문의 답을 바로 찾을 수 있도록, 병원 홈페이지를 처음부터 다시 만들었습니다.</p>
+        <dl class="mk-facts">
+          <div class="mk-facts__item"><dt>질문 답 페이지</dt><dd><span class="mk-facts__num">20</span><span class="mk-facts__unit">쪽</span></dd></div>
+          <div class="mk-facts__item"><dt>2분 자가진단 · 불편한 곳</dt><dd><span class="mk-facts__num">6</span><span class="mk-facts__unit">가지</span></dd></div>
+          <div class="mk-facts__item"><dt>관리자 화면 메뉴</dt><dd><span class="mk-facts__num">17</span><span class="mk-facts__unit">개</span></dd></div>
+          <div class="mk-facts__item is-pending" data-sitemap-item><dt>새 사이트 페이지<span class="sr-only"> (사이트맵 기준)</span></dt><dd><span class="mk-facts__num" data-sitemap-count>–</span><span class="mk-facts__unit">쪽</span></dd></div>
+        </dl>
+        <div class="mk-cover__demo">
+          <p class="mk-cover__k">데모 주소</p>
+          <p class="mk-cover__url"><a href="https://kkwon91.github.io/appledental-demo/" target="_blank" rel="noopener">https://kkwon91.github.io/<wbr><span class="nw">appledental-demo/</span><span class="sr-only"> (새 창)</span></a></p>
+          <p class="mk-cover__note">검색 노출을 막아 둔 시안입니다. 상담 신청은 병원에 전달되지 않습니다.</p>
+        </div>
+      </div>
+      <figure class="mk-cover__ph">
+        <div class="trim mk-cover__frame"><img class="mk-cover__img" src="../assets/img/photo/a4_4.webp" width="1400" height="800" alt="곡선 소파와 원목 안락의자, 둥근 협탁이 놓인 대기 공간과 벽의 안내 화면" fetchpriority="high" decoding="async"></div>
+        <figcaption class="cap">2층 대기 공간 안쪽 · 새 사이트는 병원 실사 사진만 씁니다</figcaption>
+      </figure>
+    </div>
+    <nav class="mk-toc" aria-label="이 페이지 순서">
+      <ol class="mk-toc__list">
+        <li><a class="mk-toc__a" href="#pc"><span class="mk-toc__no">02</span><span class="mk-toc__t">PC 화면</span></a></li>
+        <li><a class="mk-toc__a" href="#mobile"><span class="mk-toc__no">03</span><span class="mk-toc__t">모바일 화면</span></a></li>
+        <li><a class="mk-toc__a" href="#compare"><span class="mk-toc__no">04</span><span class="mk-toc__t">원본과 비교</span></a></li>
+        <li><a class="mk-toc__a" href="#changes"><span class="mk-toc__no">05</span><span class="mk-toc__t">달라진 것</span></a></li>
+        <li><a class="mk-toc__a" href="#next"><span class="mk-toc__no">06</span><span class="mk-toc__t">다음 단계</span></a></li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<!-- ② PC 목업 -->
+<section class="mk-sec mk-pc tone-stone" id="pc" aria-labelledby="mk-pc-t">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-head__index"><span class="sec-head__no">02</span><span class="sec-head__label">PC 화면</span></p>
+      <h2 class="sec-head__title" id="mk-pc-t">노트북으로 보는 새 홈페이지</h2>
+      <p class="sec-head__intro">데모 사이트를 노트북 화면 크기(가로 1440px)로 띄워 줄여 보여 드립니다. 탭으로 페이지를 바꾸고, 화면을 누르면 직접 스크롤하며 둘러보실 수 있습니다.</p>
+    </header>
+    <div class="mk-dev" data-device data-label="PC" data-speed="180">
+      <div class="mk-ctrl">
+        <ul class="mk-tabs" aria-label="PC 화면에서 볼 페이지">
+          <li><a class="chip mk-tab" href="../?gm=off" target="mk-pc-frame" data-path="" aria-current="true">홈</a></li>
+          <li><a class="chip mk-tab" href="../implant/?gm=off" target="mk-pc-frame" data-path="implant/">임플란트</a></li>
+          <li><a class="chip mk-tab" href="../doctors/?gm=off" target="mk-pc-frame" data-path="doctors/">의료진</a></li>
+          <li><a class="chip mk-tab" href="../self-check/?gm=off" target="mk-pc-frame" data-path="self-check/">2분 자가진단</a></li>
+          <li><a class="chip mk-tab" href="../answers/?gm=off" target="mk-pc-frame" data-path="answers/">질문 답</a></li>
+          <li><a class="chip mk-tab" href="../visit/?gm=off" target="mk-pc-frame" data-path="visit/">오시는 길</a></li>
+          <li><a class="chip mk-tab" href="../admin/?gm=off" target="mk-pc-frame" data-path="admin/">관리자</a></li>
+        </ul>
+        <div class="mk-ctrl__aside">
+          <button class="chip mk-auto" type="button" data-auto hidden>자동 스크롤 켜기</button>
+          <a class="link-arrow mk-open" href="../" target="_blank" rel="noopener" data-open>새 창에서 열기<span class="sr-only"> (새 창)</span></a>
+        </div>
+      </div>
+      <figure class="mk-laptop">
+        <div class="mk-laptop__lid">
+          <div class="mk-screen">
+            <div class="mk-chrome" aria-hidden="true">
+              <span class="mk-chrome__dots"><i></i><i></i><i></i></span>
+              <span class="mk-chrome__url" data-url>kkwon91.github.io/appledental-demo/</span>
+            </div>
+            <div class="mk-view mk-view--pc" data-view data-w="1440" data-h="860">
+              <iframe name="mk-pc-frame" src="../?gm=off" title="새 홈페이지 PC 화면 미리보기 — 홈" loading="lazy" data-frame></iframe>
+              <button class="mk-veil" type="button" data-veil hidden><span class="mk-veil__pill">눌러서 직접 둘러보기</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="mk-laptop__base" aria-hidden="true"></div>
+        <div class="mk-lock-row"><button class="chip mk-lock" type="button" data-lock hidden>둘러보기 끝내기</button></div>
+        <figcaption class="cap">데모 사이트를 그대로 불러온 화면입니다. 화면을 누르면 직접 둘러볼 수 있습니다.</figcaption>
+      </figure>
+      <p class="mk-small-note u-hide-pc">휴대폰에서는 PC 화면이 아주 작게 보입니다. ‘새 창에서 열기’를 누르시거나 큰 화면에서 보세요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 모바일 목업 -->
+<section class="mk-sec mk-mo" id="mobile" aria-labelledby="mk-mo-t">
+  <div class="wrap mk-mo__grid">
+    <div class="mk-mo__text">
+      <header class="sec-head">
+        <p class="sec-head__index"><span class="sec-head__no">03</span><span class="sec-head__label">모바일 화면</span></p>
+        <h2 class="sec-head__title" id="mk-mo-t">휴대폰으로 보는 새 홈페이지</h2>
+        <p class="sec-head__intro">휴대폰 너비(390px) 그대로입니다. 아래쪽 고정 바에서 네이버 예약·2분 자가진단·상담 신청·전화를 바로 누를 수 있습니다.</p>
+      </header>
+      <dl class="mk-points">
+        <div><dt>아래쪽 고정 바</dt><dd>네이버 예약 · 2분 자가진단 · 상담 신청 · 전화</dd></div>
+        <div><dt>누르는 곳</dt><dd>버튼 높이 44px 이상</dd></div>
+        <div><dt>본문 글자</dt><dd>17px, 한국어 낱말이 줄 끝에서 끊기지 않게 조판</dd></div>
+        <div><dt>전화번호</dt><dd>누르면 바로 전화 연결</dd></div>
+      </dl>
+      <div class="mk-dev mk-dev--side" data-device data-label="휴대폰" data-speed="150" data-target="mk-phone">
+        <div class="mk-ctrl mk-ctrl--stack">
+          <ul class="mk-tabs" aria-label="휴대폰 화면에서 볼 페이지">
+            <li><a class="chip mk-tab" href="../?gm=off" target="mk-mo-frame" data-path="" aria-current="true">홈</a></li>
+            <li><a class="chip mk-tab" href="../implant/?gm=off" target="mk-mo-frame" data-path="implant/">임플란트</a></li>
+            <li><a class="chip mk-tab" href="../doctors/?gm=off" target="mk-mo-frame" data-path="doctors/">의료진</a></li>
+            <li><a class="chip mk-tab" href="../self-check/?gm=off" target="mk-mo-frame" data-path="self-check/">2분 자가진단</a></li>
+            <li><a class="chip mk-tab" href="../answers/?gm=off" target="mk-mo-frame" data-path="answers/">질문 답</a></li>
+            <li><a class="chip mk-tab" href="../visit/?gm=off" target="mk-mo-frame" data-path="visit/">오시는 길</a></li>
+            <li><a class="chip mk-tab" href="../admin/?gm=off" target="mk-mo-frame" data-path="admin/">관리자</a></li>
+          </ul>
+          <div class="mk-ctrl__aside">
+            <button class="chip mk-auto" type="button" data-auto hidden>자동 스크롤 켜기</button>
+            <a class="link-arrow mk-open" href="../" target="_blank" rel="noopener" data-open>새 창에서 열기<span class="sr-only"> (새 창)</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figure class="mk-phone-fig" id="mk-phone">
+      <div class="mk-phone">
+        <div class="mk-phone__screen">
+          <div class="mk-phone__status" aria-hidden="true"><span class="mk-phone__island"></span></div>
+          <div class="mk-view mk-view--mo" data-view data-w="390" data-h="800">
+            <iframe name="mk-mo-frame" src="../?gm=off" title="새 홈페이지 휴대폰 화면 미리보기 — 홈" loading="lazy" data-frame></iframe>
+            <button class="mk-veil" type="button" data-veil hidden><span class="mk-veil__pill">눌러서 직접 둘러보기</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="mk-lock-row"><button class="chip mk-lock" type="button" data-lock hidden>둘러보기 끝내기</button></div>
+      <figcaption class="cap">휴대폰 너비 390px로 불러온 데모 사이트입니다. 화면을 누르면 직접 둘러볼 수 있습니다.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ④ 원본 vs 새 사이트 -->
+<section class="mk-sec mk-cmp tone-stone" id="compare" aria-labelledby="mk-cmp-t">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-head__index"><span class="sec-head__no">04</span><span class="sec-head__label">원본과 비교</span></p>
+      <h2 class="sec-head__title" id="mk-cmp-t">첫 화면부터 달라집니다</h2>
+      <p class="sec-head__intro">같은 크기로 찍은 첫 화면입니다. 원본은 2026년 10월 14일, 팝업이 가린 모습 그대로 찍었습니다.</p>
+    </header>
+    <div class="mk-pair">
+      <article class="mk-side mk-side--before" aria-labelledby="mk-before-t">
+        <h3 class="mk-side__t" id="mk-before-t"><span class="mk-side__k">원본</span>appledental.kr</h3>
+        <figure class="mk-shot mk-shot--pc">
+          <img src="img/before-pc.webp" width="1440" height="900" loading="lazy" decoding="async" alt="원본 appledental.kr PC 첫 화면. 왼쪽 위 팝업(학술 논문 게재 안내 그림)이 로고와 메뉴 앞부분을 가리고, 뒤로 병원 건물 항공 사진 위에 ‘사과나무치과병원은 생애주기를 고려한 맞춤 진료로’ 문구, 맨 아래에 빠른 상담 신청 띠가 있다.">
+          <figcaption class="cap">PC 첫 화면 · 1440 × 900</figcaption>
+        </figure>
+        <div class="mk-side__row">
+          <figure class="mk-shot mk-shot--mo">
+            <img src="img/before-mo.webp" width="780" height="1688" loading="lazy" decoding="async" alt="원본 appledental.kr 휴대폰 첫 화면. 학술 논문 게재 안내 팝업이 화면 대부분을 가리고, 아래쪽에 ‘SINCE 1997’ 문구와 상담 신청 띠, 오른쪽에 예약·카톡 고정 버튼이 보인다.">
+            <figcaption class="cap">휴대폰 첫 화면 · 390 × 844</figcaption>
+          </figure>
+          <ul class="mk-obs">
+            <li>팝업 1개가 첫 화면을 가립니다(PC 화면의 약 21%, 휴대폰 화면의 약 55%).</li>
+            <li>PC에서는 팝업이 로고와 메뉴 앞부분을 가립니다.</li>
+            <li>팝업 그림 3장(채용 공고·논문 게재·교정과 소식)과 배경 사진·문구가 몇 초마다 바뀝니다.</li>
+            <li>휴대폰에서는 오른쪽 고정 버튼이 첫 화면 문구 일부를 가립니다.</li>
+          </ul>
+        </div>
+      </article>
+      <article class="mk-side mk-side--after" aria-labelledby="mk-after-t">
+        <h3 class="mk-side__t" id="mk-after-t"><span class="mk-side__k">새 사이트</span>리뉴얼 시안</h3>
+        <figure class="mk-shot mk-shot--pc">
+          <img src="img/after-pc.webp" width="1440" height="900" loading="lazy" decoding="async" alt="새 사이트 PC 첫 화면. 맨 위 야간진료 안내 띠와 메뉴 아래로 2층 대기 공간 실사, ‘1997년부터, 부천에서 진료해 왔습니다’ 제목과 첫 문단, 네이버 예약·전화 버튼, 개원 1997년·진료과 9개·치과의사 17명·전문의 10명 숫자, 오른쪽 고정 버튼이 보인다.">
+          <figcaption class="cap">PC 첫 화면 · 1440 × 900</figcaption>
+        </figure>
+        <div class="mk-side__row">
+          <figure class="mk-shot mk-shot--mo">
+            <img src="img/after-mo.webp" width="780" height="1688" loading="lazy" decoding="async" alt="새 사이트 휴대폰 첫 화면. 야간진료 안내 띠와 로고 아래로 2층 대기 공간 실사, ‘1997년부터, 부천에서 진료해 왔습니다’ 제목과 첫 문단, 네이버 예약·전화 버튼, 아래쪽 고정 바(네이버 예약·2분 자가진단·상담 신청·전화)가 보인다.">
+            <figcaption class="cap">휴대폰 첫 화면 · 390 × 844</figcaption>
+          </figure>
+          <ul class="mk-obs">
+            <li>팝업 없이 병원 이름과 제목, 첫 문단이 바로 보입니다.</li>
+            <li>첫 문단이 ‘어떤 병원인가’에 답합니다. 부천역 3번 출구에서 걸어서 8분, 9개 진료과 치과의사 17명(보건복지부 인증 전문의 10명).</li>
+            <li>맨 위 띠에 야간진료 안내, 머리에 진료 중·진료 종료 표시와 전화번호가 있습니다.</li>
+            <li>예약·자가진단·상담·전화 버튼이 PC는 오른쪽, 휴대폰은 아래쪽에 늘 있습니다.</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+    <p class="basis mk-cmp__basis">원본·새 사이트 모두 2026년 10월 14일에 같은 크기로 찍었습니다. 새 사이트는 데모(검색 노출 차단) 화면입니다.</p>
+
+    <div class="mk-table">
+      <h3 class="mk-sub" id="mk-table-t">검색엔진·AI가 읽는 부분</h3>
+      <p class="mk-sub__intro">화면 뒤에서 검색엔진과 AI 답변 엔진이 읽는 파일과 표식을 비교했습니다. 원본은 2026년 10월 14일에 직접 열어 확인했습니다.</p>
+      <div class="blk-table mk-cmp-table" data-compare aria-live="polite">
+        <p class="mk-loading">비교표를 불러오는 중입니다.</p>
+      </div>
+      <noscript><p class="mk-loading">비교표는 자바스크립트가 켜져 있어야 보입니다. 원본 자료: <a href="../assets/data/compare.json">compare.json</a></p></noscript>
+      <p class="basis" data-compare-basis hidden></p>
+    </div>
+
+    <div class="mk-audit" data-audit aria-labelledby="mk-audit-t">
+      <div class="mk-audit__head">
+        <h3 class="mk-sub" id="mk-audit-t">그로스메이트 AEO 점검</h3>
+        <p class="mk-sub__intro">AI 답변 엔진이 병원 페이지를 읽고 인용하기 좋은지 그로스메이트로 점검한 결과입니다. 실서비스 전환 전후로 재서 이 칸을 채웁니다.</p>
+      </div>
+      <div class="mk-audit__grid">
+        <div class="mk-audit__col" data-audit-col="before">
+          <p class="mk-audit__k">원본 appledental.kr</p>
+          <p class="mk-audit__v is-empty" data-audit-v>측정 예정</p>
+          <div class="mk-audit__more" data-audit-more></div>
+        </div>
+        <div class="mk-audit__col" data-audit-col="after">
+          <p class="mk-audit__k">새 사이트(시안)</p>
+          <p class="mk-audit__v is-empty" data-audit-v>측정 예정</p>
+          <div class="mk-audit__more" data-audit-more></div>
+        </div>
+      </div>
+      <p class="basis" data-audit-basis>아직 측정 전입니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ⑤ 달라진 것 -->
+<section class="mk-sec mk-changes" id="changes" aria-labelledby="mk-new-t">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="sec-head__index"><span class="sec-head__no">05</span><span class="sec-head__label">달라진 것</span></p>
+      <h2 class="sec-head__title" id="mk-new-t">새 홈페이지에 담은 아홉 가지</h2>
+      <p class="sec-head__intro">환자에게는 필요한 답을 빨리 보여 드리고, 병원에는 상담과 통계를 한눈에 보여 드리도록 만들었습니다.</p>
+    </header>
+    <ol class="mk-feats">
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">01</p>
+        <h3 class="mk-feat__t">질문 답 20쪽</h3>
+        <p class="mk-feat__d">진료시간·주차·보험 임플란트·사랑니 발치처럼 환자가 실제로 묻는 질문 20개에 한 쪽씩 답했습니다. 첫 문단이 바로 답이라 AI 답변이 그대로 인용하기 좋습니다.</p>
+        <p class="mk-feat__go"><a class="link-arrow" href="../answers/" target="_blank" rel="noopener">질문 답 보기<span class="sr-only"> (새 창)</span></a></p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">02</p>
+        <h3 class="mk-feat__t">2분 치아 자가진단</h3>
+        <p class="mk-feat__d">불편한 곳 6가지 가운데 하나와 연령대를 고르고 질문 10개에 답하면, 진료가 얼마나 필요한지 4단계로 알려 드립니다. 이름·연락처는 묻지 않습니다.</p>
+        <p class="mk-feat__sub">문항은 의료진 검수 전 예시입니다.</p>
+        <p class="mk-feat__go"><a class="link-arrow" href="../self-check/" target="_blank" rel="noopener">자가진단 해 보기<span class="sr-only"> (새 창)</span></a></p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">03</p>
+        <h3 class="mk-feat__t">관리자 화면 17개 메뉴</h3>
+        <p class="mk-feat__d">상담 신청, 자가진단 통계, AI 노출 현황을 관리자 화면에서 한눈에 봅니다. 데모는 예시 데이터로 채웠습니다.</p>
+        <p class="mk-feat__go"><a class="link-arrow" href="../admin/" target="_blank" rel="noopener">관리자 화면 보기<span class="sr-only"> (새 창)</span></a></p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">04</p>
+        <h3 class="mk-feat__t">그로스메이트 연결</h3>
+        <p class="mk-feat__d">페이지의 큰 구간마다 이름표를 달았습니다. 어느 구간을 본 뒤 전화·네이버 예약·카카오톡·상담 신청으로 이어졌는지 그로스메이트가 모읍니다.</p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">05</p>
+        <h3 class="mk-feat__t">AI 안내 파일 llms.txt</h3>
+        <p class="mk-feat__d">AI 검색 로봇이 먼저 읽는 안내 파일입니다. 페이지마다 한두 문장 요약과 주소를 한 파일에 모았습니다. 원본 사이트에는 없습니다.</p>
+        <p class="mk-feat__go"><a class="link-arrow" href="../llms.txt" target="_blank" rel="noopener">llms.txt 보기<span class="sr-only"> (새 창)</span></a></p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">06</p>
+        <h3 class="mk-feat__t">구조화 데이터</h3>
+        <p class="mk-feat__d">병원 정보(주소·전화·진료시간), 페이지 위치, 화면에 보이는 질문과 답을 검색엔진·AI가 읽는 표식으로 붙였습니다. 화면에 없는 질문은 넣지 않습니다.</p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">07</p>
+        <h3 class="mk-feat__t">의료광고 표현 점검</h3>
+        <p class="mk-feat__d">의료법 제56조에 맞춰 효과를 보장하는 말, 다른 병원과 견주는 최상급 표현, 가격으로 환자를 끄는 문구, 치료 경험담을 쓰지 않습니다. 글을 고칠 때마다 점검 도구로 다시 확인합니다.</p>
+      </li>
+      <li class="mk-feat">
+        <p class="mk-feat__no" aria-hidden="true">08</p>
+        <h3 class="mk-feat__t">병원 실사 사진</h3>
+        <p class="mk-feat__d">원본 사이트에서 받은 병원 실제 사진 567장 가운데에서만 골라 씁니다. 연출 모델 사진과 전후 비교 사진은 쓰지 않습니다.</p>
+      </li>
+      <li class="mk-feat mk-feat--logo">
+        <p class="mk-feat__no" aria-hidden="true">09</p>
+        <h3 class="mk-feat__t">공식 로고</h3>
+        <p class="mk-feat__d">병원 공식 로고 파일 3종을 그대로 씁니다. 다시 그리거나 색을 바꾸지 않았습니다.</p>
+        <ul class="mk-logos">
+          <li class="mk-logos__item"><img src="../assets/img/brand/logo-color.png" width="526" height="110" alt="밝은 바탕용 공식 로고" loading="lazy" decoding="async"><span>밝은 바탕</span></li>
+          <li class="mk-logos__item mk-logos__item--ink"><img src="../assets/img/brand/logo-white.png" width="526" height="110" alt="어두운 바탕용 공식 로고" loading="lazy" decoding="async"><span>어두운 바탕</span></li>
+          <li class="mk-logos__item mk-logos__item--sym"><img src="../assets/img/brand/logo-symbol.png" width="92" height="110" alt="공식 로고 심볼" loading="lazy" decoding="async"><span>심볼</span></li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ⑥ 다음 단계 -->
+<section class="mk-sec mk-next tone-stone" id="next" aria-labelledby="mk-next-t">
+  <div class="wrap mk-next__grid">
+    <header class="sec-head mk-next__head">
+      <p class="sec-head__index"><span class="sec-head__no">06</span><span class="sec-head__label">다음 단계</span></p>
+      <h2 class="sec-head__title" id="mk-next-t">실서비스로 바꾸기 전에 할 일</h2>
+      <p class="sec-head__intro">지금은 검색 노출을 막아 둔 데모이고, 상담 신청도 병원에 전달되지 않습니다. 아래 여섯 가지를 마치면 appledental.kr 주소로 운영할 수 있습니다.</p>
+    </header>
+    <ol class="mk-steps">
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">01</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">병원 확인 사항 정리 <span class="tag tag--line">병원</span></h3>
+          <ul class="mk-step__list">
+            <li>원본 페이지끼리 엇갈리는 사실을 정합니다. 임플란트 보증 기간, 스태프 수(130여 명 또는 120여 명), 건물 이름 표기 등입니다.</li>
+            <li>의료진별 담당 진료와 경력 표기, 비급여 진료비의 금액 단위를 확인합니다.</li>
+            <li>2분 자가진단 문항을 의료진이 검수합니다(지금은 예시 문항).</li>
+          </ul>
+        </div>
+      </li>
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">02</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">도메인 연결 <span class="tag tag--line">제작</span><span class="tag tag--line">병원</span></h3>
+          <ul class="mk-step__list">
+            <li>appledental.kr 주소를 새 사이트로 연결합니다.</li>
+            <li>옛 주소(예: page/implant.php?id=01)는 새 주소(/implant/)로 넘겨, 쌓아 온 검색 노출을 이어받습니다.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">03</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">상담 접수 연결 <span class="tag tag--line">제작</span><span class="tag tag--line">병원</span></h3>
+          <ul class="mk-step__list">
+            <li>상담 신청서가 병원에 실제로 도착하도록 받을 곳(관리자 화면·문자·이메일 등)을 정해 연결합니다.</li>
+            <li>지금 데모는 신청 내용을 보는 사람의 브라우저에만 저장하고 병원에 보내지 않습니다.</li>
+            <li>개인정보 수집·이용 동의 문구를 병원 기준으로 최종 확인합니다.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">04</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">측정 도구 이식 <span class="tag tag--line">제작</span></h3>
+          <ul class="mk-step__list">
+            <li>병원이 쓰던 GA4·구글 태그 관리자·메타 픽셀·네이버 분석을 새 사이트로 옮겨 켭니다. 설정값은 준비되어 있고, 데모에서는 꺼 두었습니다.</li>
+            <li>그로스메이트 추적 코드는 이미 연결되어 있습니다.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">05</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">검색 노출 켜기 <span class="tag tag--line">제작</span></h3>
+          <ul class="mk-step__list">
+            <li>데모 표시와 검색 차단을 풉니다. 설정 한 줄만 바꾸면 됩니다.</li>
+            <li>구글 서치 콘솔·네이버 서치어드바이저에 새 사이트맵을 등록합니다.</li>
+            <li>ChatGPT·Gemini·Claude·Perplexity·네이버 같은 AI 검색 로봇이 읽을 수 있도록 robots.txt 에 명시합니다.</li>
+          </ul>
+        </div>
+      </li>
+      <li class="mk-step">
+        <p class="mk-step__no" aria-hidden="true">06</p>
+        <div class="mk-step__body">
+          <h3 class="mk-step__t">AI 검색 측정 <span class="tag tag--line">함께</span></h3>
+          <ul class="mk-step__list">
+            <li>전환 전후로 그로스메이트 AEO 점검을 돌려, AI 답변이 병원 페이지를 얼마나 인용하는지 잽니다.</li>
+            <li>결과는 이 페이지 ‘원본과 비교’의 점검 칸에 채워집니다.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+</main>
+
+<footer class="mk-foot">
+  <div class="wrap mk-foot__in">
+    <img class="mk-foot__logo" src="../assets/img/brand/logo-white.png" width="526" height="110" alt="부천 사과나무치과병원">
+    <div class="mk-foot__text">
+      <p>부천 사과나무치과병원 홈페이지 리뉴얼 시안 소개 · 2026년 10월</p>
+      <p class="mk-foot__links"><a href="../" target="_blank" rel="noopener">데모 사이트<span class="sr-only"> (새 창)</span></a><a href="https://appledental.kr" target="_blank" rel="noopener">원본 사이트 appledental.kr<span class="sr-only"> (새 창)</span></a></p>
+      <p class="mk-foot__note">이 페이지와 데모 사이트는 검색 노출을 막아 두었습니다.</p>
+    </div>
+  </div>
+</footer>
+<script src="mockup.js" defer></script>
+</body>
+</html>

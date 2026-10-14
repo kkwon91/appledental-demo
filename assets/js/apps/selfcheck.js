@@ -1,0 +1,497 @@
+/* apps/selfcheck.js — 2분 치아 자가진단 앱(/self-check/ 전용, defer)
+   데이터(페이지 안 JSON): #selfcheck-data(data/public/selfcheck.json, 내부 메모 뺌) · #selfcheck-doctors · #selfcheck-pages
+   흐름: 불편한 곳 → 연령대 → 질문(많이 그래요·조금·아니요) → 꼭 확인할 증상(영역 redFlagIds) → 결과 4단계
+   채점: 합계 = Σ options.score × questions.weight → thresholds(urgent·caution·mild) 로 단계.
+         꼭 확인할 증상 가운데 하나라도 '많이 그래요'·'조금'이면 점수와 상관없이 '진료 권장'(urgent).
+   바로 시작: 주소 #영역id (또는 ?area=영역id) — 홈·진료 페이지의 '불편한 곳' 링크가 이렇게 연결한다.
+   키보드: 숫자 키로 고르기 · Enter(고른 칸 실행, 다시 온 질문은 고른 답으로 넘어가기) · Backspace 이전 · 화살표로 칸 이동.
+   상담 연결: sessionStorage['apple_selfcheck_result'] = JSON {summary, …}(10-consult.js 가 읽는 형식) → /consult/?subject=<consultTopic>
+   이용 통계: localStorage['apple_selfcheck_stats'] 배열에 {at, area, event:'start'|'complete', level, age} — 이름·연락처·답 없음 */
+(function () {
+  'use strict';
+  var d = document;
+  var w = window;
+  var sec = d.getElementById('sc-app');
+  var box = d.querySelector('[data-sc-app]');
+  if (!sec || !box) return;
+  var stage = box.querySelector('[data-sc-stage]');
+  if (!stage) return;
+
+  function readJson(id, fallback) {
+    var el = d.getElementById(id);
+    if (!el) return fallback;
+    try { return JSON.parse(el.textContent || ''); } catch (e) { return fallback; }
+  }
+  function fail() {
+    var tel = box.getAttribute('data-tel') || '';
+    var phone = box.getAttribute('data-phone') || '';
+    stage.innerHTML = '<p class="sc-nojs">자가진단을 불러오지 못했습니다. 새로 고침해 보시고, 계속 안 되면 전화' +
+      (tel ? ' <a href="' + esc(tel) + '" data-gm-event="lead_call">' + esc(phone) + '</a>' : '') + '로 문의해 주세요.</p>';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function each(list, fn) { Array.prototype.forEach.call(list || [], fn); }
+
+  var S = readJson('selfcheck-data', null);
+  if (!S || !S.areas || !S.areas.length || !S.options || !S.options.length) { fail(); return; }
+  var DOCS = {};
+  each(readJson('selfcheck-doctors', []) || [], function (x) { if (x && x.id) DOCS[x.id] = x; });
+  var PAGES = readJson('selfcheck-pages', {}) || {};
+
+  var fill = box.querySelector('[data-sc-fill]');
+  var stepEls = box.querySelectorAll('[data-sc-step]');
+  var live = box.querySelector('[data-sc-live]');
+  var consultUrl = box.getAttribute('data-consult') || '';
+  var phone = box.getAttribute('data-phone') || '';
+  var telHref = box.getAttribute('data-tel') || '';
+  var demo = box.getAttribute('data-demo') === '1';
+  var reduce = !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  var AREA = {};
+  each(S.areas, function (a) { AREA[a.id] = a; });
+  var AGES = S.ages || [];
+  var AGE = {};
+  each(AGES, function (g) { AGE[g.id] = g; });
+  var RF = {};
+  each(S.redFlags, function (r) { RF[r.id] = r; });
+  var OPTS = S.options;
+  var OPT = {};
+  each(OPTS, function (o, i) { OPT[o.id] = { label: o.label, score: Number(o.score) || 0, index: i }; });
+  var LEVELS = S.levels || [];
+  var LV = {};
+  each(LEVELS, function (l, i) { LV[l.id] = { label: l.label, title: l.title, text: l.text, index: i }; });
+  var HIT = { much: true, some: true }; // 꼭 확인할 증상에서 '있음'으로 치는 답
+  var STEP = (S.steps || []).map(function (s) { return s.label; });
+  var RESULT_KEY = 'apple_selfcheck_result';
+  var STATS_KEY = 'apple_selfcheck_stats';
+
+  var ARROW = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13.5 6.5 19 12l-5.5 5.5"/></g></svg>';
+  var areaEl = stage.querySelector('[data-screen="area"]');
+  var AREA_HTML = areaEl ? areaEl.outerHTML : htmlArea();
+
+  function fresh() { return { screen: 'area', area: null, age: null, i: 0, answers: {}, started: false, completed: false }; }
+  var st = fresh();
+  var lastRender = 0;
+
+  // ── 화면 글 ────────────────────────────────────────────────────────────────
+  function ro(n) { return /[360]$/.test(String(n)) ? '으로' : '로'; }
+  function keysHint(n, withBack) {
+    var keys = n <= 3 ? Array.apply(null, Array(n)).map(function (_, i) { return i + 1; }).join('·') : '1~' + n;
+    return '<p class="sc-keys">숫자 키 ' + keys + ro(n) + (withBack ? ' 답하고, Backspace 키로 이전 화면에 돌아갑니다.' : '도 고를 수 있습니다.') + '</p>';
+  }
+  function backBtn() { return '<button type="button" class="sc-back" data-sc-back>' + ARROW + '<span>이전</span></button>'; }
+  function optBtn(i, label, hint, picked) {
+    return '<button type="button" class="sc-opt' + (picked ? ' is-picked' : '') + '" data-pick="' + i + '">' +
+      '<span class="sc-opt__no" aria-hidden="true">' + (i + 1) + '</span>' +
+      '<span class="sc-opt__txt"><span class="sc-opt__label">' + esc(label) + '</span>' + (hint ? '<span class="sc-opt__hint">' + esc(hint) + '</span>' : '') +
+      (picked ? '<span class="sr-only"> (고른 답)</span>' : '') + '</span>' +
+      '<span class="sc-opt__go" aria-hidden="true">' + ARROW + '</span></button>';
+  }
+  function itemsOf(a) {
+    var out = (a.questions || []).map(function (q) { return { kind: 'q', id: q.id, text: q.text, weight: Number(q.weight) || 1 }; });
+    each(a.redFlagIds, function (id) { if (RF[id]) out.push({ kind: 'rf', id: id, text: RF[id].label, desc: RF[id].text }); });
+    return out;
+  }
+
+  function htmlArea() {
+    var n = S.areas.length;
+    return '<div class="sc-screen" data-screen="area">' +
+      '<p class="sc-screen__k"><span>1단계 · ' + esc(STEP[0] || '불편한 곳') + '</span></p>' +
+      '<h3 class="sc-screen__q" id="sc-q" tabindex="-1">어디가 불편하신가요?</h3>' +
+      '<p class="sc-screen__sub">가장 불편한 곳 하나를 골라 주세요.</p>' +
+      '<div class="sc-opts sc-opts--area" role="group" aria-labelledby="sc-q">' +
+      S.areas.map(function (a, i) { return optBtn(i, a.label, a.hint, false); }).join('') + '</div>' + keysHint(n) + '</div>';
+  }
+  function htmlAge() {
+    var a = AREA[st.area];
+    return '<div class="sc-screen" data-screen="age">' + backBtn() +
+      '<p class="sc-screen__k"><span>2단계 · ' + esc(STEP[1] || '연령대') + '</span><span class="sc-screen__area">' + esc(a.label) + '</span></p>' +
+      '<h3 class="sc-screen__q" id="sc-q" tabindex="-1">연령대를 골라 주세요</h3>' +
+      '<p class="sc-screen__sub">나이에 맞춘 안내를 결과에 덧붙여 드립니다.</p>' +
+      '<div class="sc-opts sc-opts--age" role="group" aria-labelledby="sc-q">' +
+      AGES.map(function (g, i) { return optBtn(i, g.label, '', st.age === g.id); }).join('') + '</div>' + keysHint(AGES.length, true) + '</div>';
+  }
+  function qLabel(a, list, i) {
+    var nQ = (a.questions || []).length;
+    return list[i].kind === 'rf' ? '꼭 확인할 증상 ' + (i - nQ + 1) + ' / ' + (list.length - nQ) : '질문 ' + (i + 1) + ' / ' + nQ;
+  }
+  function htmlQuestion() {
+    var a = AREA[st.area];
+    var list = itemsOf(a);
+    var it = list[st.i];
+    var rf = it.kind === 'rf';
+    return '<div class="sc-screen' + (rf ? ' sc-screen--rf' : '') + '" data-screen="q">' + backBtn() +
+      '<p class="sc-screen__k"><span class="tnum">' + esc(qLabel(a, list, st.i)) + '</span><span class="sc-screen__area">' + esc(a.label) + '</span></p>' +
+      '<h3 class="sc-screen__q" id="sc-q" tabindex="-1">' + esc(it.text) + '</h3>' +
+      (rf ? '<p class="sc-screen__desc">' + esc(it.desc) + '</p><p class="sc-screen__sub sc-screen__sub--rf">이 증상이 있으면 점수와 상관없이 결과가 ‘' + esc((LV.urgent || {}).label || '진료 권장') + '’이 됩니다.</p>' : '') +
+      '<div class="sc-opts" role="group" aria-labelledby="sc-q">' +
+      OPTS.map(function (o, i) { return optBtn(i, o.label, '', st.answers[it.id] === o.id); }).join('') + '</div>' + keysHint(OPTS.length, true) + '</div>';
+  }
+
+  // ── 채점 ──────────────────────────────────────────────────────────────────
+  function evaluate() {
+    var a = AREA[st.area];
+    var score = 0;
+    each(a.questions, function (q) {
+      var o = OPT[st.answers[q.id]];
+      if (o) score += o.score * (Number(q.weight) || 1);
+    });
+    var t = a.thresholds || {};
+    var level = score >= t.urgent ? 'urgent' : score >= t.caution ? 'caution' : score >= t.mild ? 'mild' : 'normal';
+    var red = (a.redFlagIds || []).filter(function (id) { return RF[id] && HIT[st.answers[id]]; });
+    if (red.length) level = 'urgent';
+    if (!LV[level]) level = LEVELS.length ? LEVELS[0].id : level;
+    return { score: score, level: level, red: red };
+  }
+
+  function htmlResult(r) {
+    var a = AREA[st.area];
+    var lv = LV[r.level] || {};
+    var res = (a.results || {})[r.level] || {};
+    var age = AGE[st.age];
+    var ageNote = (a.ageNotes || {})[st.age];
+    var RI = S.redFlagIntro || {};
+    var gauge = LEVELS.map(function (l, i) {
+      return '<li class="sc-gauge__step' + (l.id === r.level ? ' is-on' : '') + '" style="--i:' + i + '"><span class="sc-gauge__bar"></span><span class="sc-gauge__label">' + esc(l.label) + '</span></li>';
+    }).join('');
+    var red = r.red.length ? '<div class="sc-res__red" role="note">' +
+      '<p class="sc-res__red-t">' + esc(RI.title || '이런 증상이 있으면 기다리지 마세요') + '</p>' +
+      '<p class="sc-res__red-k">답하신 증상</p><ul class="sc-res__red-list">' + r.red.map(function (id) { return '<li>' + esc(RF[id].label) + '</li>'; }).join('') + '</ul>' +
+      (RI.action ? '<p class="sc-res__red-x">' + esc(RI.action) + '</p>' : '') +
+      (telHref ? '<p class="sc-res__red-go"><a class="btn btn--ink" href="' + esc(telHref) + '" data-gm-event="lead_call">전화 <span class="tnum">' + esc(phone) + '</span></a></p>' : '') +
+      '</div>' : '';
+    var links = (a.pages || []).map(function (p) {
+      var x = PAGES[p];
+      return x ? '<li><a class="sc-res__link" href="' + esc(x.href) + '"><span>' + esc(x.label) + '</span>' + ARROW + '</a></li>' : '';
+    }).join('');
+    var docs = (a.doctors || []).map(function (id) {
+      var x = DOCS[id];
+      if (!x) return '';
+      return '<li><a class="sc-doc" href="' + esc(x.href) + '">' +
+        '<span class="sc-doc__ph">' + (x.photo ? '<img src="' + esc(x.photo) + '" alt="" width="' + (x.w || 482) + '" height="' + (x.h || 470) + '" loading="lazy" decoding="async">' : '') + '</span>' +
+        '<span class="sc-doc__txt"><span class="sc-doc__nm">' + esc(x.name) + '</span><span class="sc-doc__role">' + esc(x.role || x.title) + '</span>' +
+        (x.spec ? '<span class="sc-doc__spec">' + esc(x.spec) + '</span>' : '') + '</span></a></li>';
+    }).join('');
+    var consultHref = consultUrl + (a.consultTopic ? (consultUrl.indexOf('?') > -1 ? '&' : '?') + 'subject=' + encodeURIComponent(a.consultTopic) : '');
+    var call = r.level === 'urgent' && !r.red.length && telHref
+      ? '<a class="btn btn--line" href="' + esc(telHref) + '" data-gm-event="lead_call">전화 <span class="tnum">' + esc(phone) + '</span></a>' : '';
+    var recap = itemsOf(a).map(function (it) {
+      var o = OPT[st.answers[it.id]];
+      return '<li class="sc-recap__item' + (it.kind === 'rf' ? ' is-rf' : '') + (o && o.score > 0 ? ' is-yes' : '') + '"><span class="sc-recap__q">' + esc(it.text) + '</span><span class="sc-recap__a">' + esc(o ? o.label : '답하지 않음') + '</span></li>';
+    }).join('');
+    return '<div class="sc-screen sc-result" data-screen="result" data-level="' + esc(r.level) + '">' + backBtn() +
+      '<p class="sc-screen__k"><span>결과</span><span class="sc-screen__area">' + esc(a.label) + (age ? ' · ' + esc(age.label) : '') + '</span></p>' +
+      '<ol class="sc-gauge" aria-hidden="true">' + gauge + '</ol>' +
+      '<p class="sc-res__level"><span class="sr-only">결과 단계: </span>' + esc(lv.label) + '<span class="sc-res__of">' + LEVELS.length + '단계 중 ' + (lv.index + 1) + '단계</span></p>' +
+      '<h3 class="sc-screen__q sc-res__title" id="sc-q" tabindex="-1">' + esc(res.title || lv.title) + '</h3>' +
+      red +
+      '<p class="sc-res__text">' + esc(res.text || lv.text) + '</p>' +
+      (ageNote ? '<div class="sc-res__age"><p class="sc-res__k">' + esc(age ? age.label : '') + ' 안내</p><p>' + esc(ageNote) + '</p></div>' : '') +
+      '<div class="sc-res__actions">' +
+      '<a class="btn btn--ink" href="' + esc(consultHref) + '" data-sc-consult data-gm-event="consult_open">이 결과로 상담 신청</a>' + call +
+      '<button type="button" class="btn btn--line" data-sc-restart>다시 하기</button></div>' +
+      '<p class="sc-res__send">‘이 결과로 상담 신청’을 누르시면 결과 요약이 상담 신청서에 함께 담깁니다.</p>' +
+      (links || docs ? '<div class="sc-res__more">' +
+        (links ? '<div class="sc-res__block"><h4 class="sc-res__h">관련 진료</h4><ul class="sc-res__links">' + links + '</ul></div>' : '') +
+        (docs ? '<div class="sc-res__block"><h4 class="sc-res__h">담당 의료진</h4><ul class="sc-docs">' + docs + '</ul></div>' : '') + '</div>' : '') +
+      '<details class="sc-recap"><summary>내 답 다시 보기</summary><ol class="sc-recap__list">' + recap + '</ol></details>' +
+      (S.disclaimer ? '<p class="sc-res__disc">' + esc(S.disclaimer) + '</p>' : '') +
+      (demo && S.reviewNote ? '<p class="sc-res__review"><span class="tag tag--check">' + esc(S.reviewNote) + '</span></p>' : '') +
+      '</div>';
+  }
+
+  // ── 상담 신청서로 넘길 요약(10-consult.js: 글 또는 {summary} JSON) ─────────────────────
+  function trimDot(s) { return String(s || '').replace(/[.。]\s*$/, ''); }
+  function resultPayload() {
+    var a = AREA[st.area];
+    var r = evaluate();
+    var lv = LV[r.level] || {};
+    var res = (a.results || {})[r.level] || {};
+    var age = AGE[st.age] || {};
+    var list = itemsOf(a);
+    var marked = list.filter(function (it) { var o = OPT[st.answers[it.id]]; return it.kind === 'q' && o && o.score > 0; });
+    var parts = [a.label, age.label, '결과 ' + lv.label + (res.title ? '(' + res.title + ')' : '')];
+    if (r.red.length) parts.push('기다리지 마세요 증상: ' + r.red.map(function (id) { return RF[id].label; }).join(', '));
+    parts.push(marked.length
+      ? '해당 답: ' + marked.map(function (it) { return trimDot(it.text) + '(' + OPT[st.answers[it.id]].label + ')'; }).join(' / ')
+      : '해당 답 없음');
+    return {
+      summary: parts.filter(Boolean).join(' · '),
+      area: a.id, areaLabel: a.label, age: st.age, ageLabel: age.label || '',
+      level: r.level, levelLabel: lv.label || '', title: res.title || lv.title || '',
+      redFlags: r.red,
+      answers: list.map(function (it) { return { id: it.id, q: it.text, a: st.answers[it.id] || null }; }),
+      consultTopic: a.consultTopic || '',
+      at: new Date().toISOString(),
+      version: S.version || '',
+    };
+  }
+  function saveResult() {
+    try { w.sessionStorage.setItem(RESULT_KEY, JSON.stringify(resultPayload())); } catch (e) { /* 저장소를 못 쓰면 결과 없이 신청서로 간다 */ }
+  }
+  /** 새로 시작하면 지난 결과 요약을 지운다 — 나중에 따로 여는 상담 신청서에 지난 결과가 붙지 않게 */
+  function forget() {
+    try { w.sessionStorage.removeItem(RESULT_KEY); } catch (e) { /* 무시 */ }
+  }
+
+  // ── 이용 통계(이 브라우저 안에만) ─────────────────────────────────────────────
+  function track(event, level) {
+    try {
+      var raw = w.localStorage.getItem(STATS_KEY);
+      var list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+      list.push({ at: new Date().toISOString(), area: st.area, event: event, level: level || null, age: st.age || null });
+      if (list.length > 500) list = list.slice(-500);
+      w.localStorage.setItem(STATS_KEY, JSON.stringify(list));
+    } catch (e) { /* 저장소를 못 쓰는 브라우저 — 통계만 빠진다 */ }
+  }
+
+  // ── 주소(#영역id · ?area=) ────────────────────────────────────────────────────
+  function areaFromUrl() {
+    var hsh = '';
+    try { hsh = decodeURIComponent((w.location.hash || '').slice(1)); } catch (e) { hsh = ''; }
+    if (AREA[hsh]) return hsh;
+    var m = /[?&]area=([^&#]+)/.exec(w.location.search || '');
+    if (m) {
+      var v = '';
+      try { v = decodeURIComponent(m[1]); } catch (e) { v = ''; }
+      if (AREA[v]) return v;
+    }
+    return null;
+  }
+  function setUrl(id) {
+    try {
+      var q = (w.location.search || '').replace(/^\?/, '').split('&').filter(function (p) { return p && !/^area=/.test(p); }).join('&');
+      w.history.replaceState(w.history.state, '', w.location.pathname + (q ? '?' + q : '') + (id ? '#' + encodeURIComponent(id) : ''));
+    } catch (e) { /* 주소를 못 바꿔도 앱은 그대로 */ }
+  }
+
+  // ── 그리기 · 진행 막대 · 포커스 · 알림 ────────────────────────────────────────────
+  function syncBar() {
+    var a = AREA[st.area];
+    var n = a ? itemsOf(a).length : 0;
+    var p = 0;
+    if (st.screen === 'result') p = 1;
+    else if (st.screen === 'age') p = 1 / (n + 2 || 1);
+    else if (st.screen === 'q') p = (st.i + 2) / (n + 2);
+    if (fill) fill.style.setProperty('--p', p.toFixed(4));
+    var cur = { area: 0, age: 1, q: 2, result: 3 }[st.screen];
+    each(stepEls, function (li, i) {
+      if (i === cur) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+      li.classList.toggle('is-done', i < cur);
+    });
+  }
+  function headerH() {
+    var hd = d.getElementById('site-header');
+    return hd ? hd.getBoundingClientRect().height : 0;
+  }
+  /** 상자 윗부분이 화면 밖이면 상자 머리로 올린다. mode: 'force'(늘, 부드럽게) · 'instant'(늘, 바로) · 기본(필요할 때만) */
+  function reveal(mode) {
+    var r = box.getBoundingClientRect();
+    var top = headerH();
+    var need = mode === 'force' || mode === 'instant' || r.top < top + 4 || r.top > w.innerHeight * 0.55;
+    if (!need) return;
+    var y = (w.pageYOffset || d.documentElement.scrollTop || 0) + r.top - top - 16;
+    try { w.scrollTo({ top: Math.max(0, y), behavior: reduce || mode === 'instant' ? 'auto' : 'smooth' }); }
+    catch (e) { w.scrollTo(0, Math.max(0, y)); }
+  }
+  var sayTimer = 0;
+  function say(text) {
+    if (!live) return;
+    live.textContent = '';
+    w.clearTimeout(sayTimer);
+    if (text) sayTimer = w.setTimeout(function () { live.textContent = text; }, 80);
+  }
+  function show(screen, opts) {
+    opts = opts || {};
+    st.screen = screen;
+    var text = '';
+    var html;
+    if (screen === 'area') {
+      html = AREA_HTML;
+      text = '1단계, 불편한 곳을 골라 주세요.';
+    } else if (screen === 'age') {
+      html = htmlAge();
+      text = '2단계, 연령대를 골라 주세요.';
+    } else if (screen === 'q') {
+      var a = AREA[st.area];
+      html = htmlQuestion();
+      text = qLabel(a, itemsOf(a), st.i);
+    } else {
+      var r = evaluate();
+      html = htmlResult(r);
+      var lv = LV[r.level] || {};
+      text = '결과, ' + (lv.label || '') + '. ' + LEVELS.length + '단계 중 ' + ((lv.index || 0) + 1) + '단계입니다.';
+      if (!st.completed) { st.completed = true; track('complete', r.level); }
+    }
+    stage.innerHTML = html;
+    lastRender = Date.now();
+    if (screen === 'area' && st.area) {
+      var k = S.areas.map(function (x) { return x.id; }).indexOf(st.area);
+      var b = stage.querySelector('[data-pick="' + k + '"]');
+      if (b) {
+        b.classList.add('is-picked');
+        var t = b.querySelector('.sc-opt__txt');
+        if (t) t.insertAdjacentHTML('beforeend', '<span class="sr-only"> (고른 답)</span>');
+      }
+    }
+    syncBar();
+    if (opts.focus !== false) {
+      var head = stage.querySelector('#sc-q');
+      if (head) { try { head.focus({ preventScroll: true }); } catch (e) { head.focus(); } }
+    }
+    reveal(opts.scroll);
+    say(text);
+  }
+
+  // ── 고르기 · 이전 · 다시 하기 ──────────────────────────────────────────────────
+  function startArea(id, opts) {
+    if (!AREA[id]) return;
+    if (st.area !== id) {
+      var keepAge = st.age;
+      st = fresh();
+      st.age = keepAge;
+      st.area = id;
+      if (!(opts && opts.init)) forget(); // 주소로 다시 열린 경우(새로 고침·뒤로 가기)는 방금 넘긴 결과를 지우지 않는다
+    }
+    setUrl(id);
+    show('age', opts);
+  }
+  function choose(k) {
+    if (st.screen === 'area') {
+      var a = S.areas[k];
+      if (a) startArea(a.id);
+    } else if (st.screen === 'age') {
+      var g = AGES[k];
+      if (!g) return;
+      st.age = g.id;
+      st.i = 0;
+      if (!st.started) { st.started = true; track('start'); }
+      show('q');
+    } else if (st.screen === 'q') {
+      var o = OPTS[k];
+      if (!o) return;
+      var list = itemsOf(AREA[st.area]);
+      st.answers[list[st.i].id] = o.id;
+      if (st.i < list.length - 1) { st.i += 1; show('q'); } else show('result');
+    }
+  }
+  function back() {
+    if (st.screen === 'age') show('area');
+    else if (st.screen === 'q') { if (st.i > 0) { st.i -= 1; show('q'); } else show('age'); }
+    else if (st.screen === 'result') { st.i = itemsOf(AREA[st.area]).length - 1; show('q'); }
+  }
+  function restart() {
+    st = fresh();
+    forget();
+    setUrl('');
+    show('area', { scroll: 'force' });
+  }
+  function pickedIndex() {
+    if (st.screen === 'area') return S.areas.map(function (x) { return x.id; }).indexOf(st.area);
+    if (st.screen === 'age') return AGES.map(function (x) { return x.id; }).indexOf(st.age);
+    if (st.screen === 'q') {
+      var it = itemsOf(AREA[st.area])[st.i];
+      var o = it ? OPT[st.answers[it.id]] : null;
+      return o ? o.index : -1;
+    }
+    return -1;
+  }
+
+  // 누르기(위임) — 화면이 바뀐 직후의 두 번째 누름(두 번 누르기)이 다음 질문에 답하지 않게 잠깐 막는다
+  box.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var pick = t.closest('[data-pick]');
+    if (pick && stage.contains(pick)) {
+      e.preventDefault();
+      if (Date.now() - lastRender < 280) return;
+      choose(Number(pick.getAttribute('data-pick')));
+      return;
+    }
+    if (t.closest('[data-sc-back]')) { e.preventDefault(); back(); return; }
+    if (t.closest('[data-sc-restart]')) { e.preventDefault(); restart(); return; }
+    if (t.closest('[data-sc-consult]')) saveResult(); // 링크 이동은 그대로
+  });
+
+  // 키보드 — 포커스가 자가진단 상자 안(또는 '바로 시작'으로 온 구간)에 있을 때만
+  sec.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    var t = e.target;
+    if (!t || !(box.contains(t) || t === sec)) return;
+    var tag = t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t.isContentEditable) return;
+    var opts = stage.querySelectorAll('[data-pick]');
+    var key = e.key;
+    if (/^[1-9]$/.test(key)) {
+      var k = Number(key) - 1;
+      if (k < opts.length) {
+        e.preventDefault();
+        if (!e.repeat) choose(k);
+      }
+      return;
+    }
+    if (key === 'Backspace') {
+      if (st.screen !== 'area') { e.preventDefault(); if (!e.repeat) back(); }
+      return;
+    }
+    if (key === 'Enter') {
+      if (t.closest && t.closest('button, a, summary')) return; // 칸·링크는 기본 동작
+      if (!opts.length || e.repeat) return;
+      e.preventDefault();
+      var cur = pickedIndex();
+      if (cur > -1 && st.screen !== 'area') choose(cur);
+      else opts[cur > -1 ? cur : 0].focus();
+      return;
+    }
+    if (/^Arrow(Up|Down|Left|Right)$/.test(key)) {
+      var on = t.closest && t.closest('[data-pick]');
+      if (!on) return;
+      var arr = Array.prototype.slice.call(opts);
+      var i = arr.indexOf(on);
+      var step = key === 'ArrowDown' || key === 'ArrowRight' ? 1 : -1;
+      e.preventDefault();
+      arr[(i + step + arr.length) % arr.length].focus();
+    }
+  });
+
+  // 아래 '불편한 곳 6가지'의 '이 항목으로 시작'
+  each(d.querySelectorAll('[data-sc-start]'), function (b) {
+    b.hidden = false;
+    b.addEventListener('click', function () { startArea(b.getAttribute('data-sc-start'), { scroll: 'force' }); });
+  });
+
+  // 주소로 바로 시작(#영역id · ?area=)
+  // 브라우저는 페이지를 다 읽을 무렵 아래 영역 설명(#영역id)으로 내려가면서 포커스를 문서로 되돌린다(HTML 표준 '조각으로 이동').
+  // 그래서 다 읽힐 때까지 그 앵커의 id 를 잠시 떼어 두었다가 돌려놓고, 사용자가 아직 움직이지 않았으면 상자와 질문 제목으로 한 번 더 맞춘다.
+  var first = areaFromUrl();
+  if (first) {
+    var parked = d.getElementById(first);
+    if (parked && !box.contains(parked)) parked.removeAttribute('id'); else parked = null;
+    var moved = false;
+    var mark = function () { moved = true; };
+    w.addEventListener('wheel', mark, { passive: true, once: true });
+    w.addEventListener('touchstart', mark, { passive: true, once: true });
+    w.addEventListener('keydown', mark, { once: true });
+    startArea(first, { scroll: 'instant', init: true });
+    var again = function () {
+      if (parked) { parked.id = first; parked = null; }
+      if (moved) return;
+      reveal('instant');
+      var ae = d.activeElement;
+      var head = stage.querySelector('#sc-q');
+      if (head && (!ae || ae === d.body || ae === d.documentElement)) {
+        try { head.focus({ preventScroll: true }); } catch (e) { head.focus(); }
+      }
+    };
+    if (d.readyState === 'complete') w.setTimeout(again, 40);
+    else w.addEventListener('load', function () { w.setTimeout(again, 40); });
+  } else {
+    syncBar();
+  }
+  w.addEventListener('hashchange', function () {
+    var id = areaFromUrl();
+    if (id && (id !== st.area || st.screen === 'area')) startArea(id, { scroll: 'force' });
+  });
+})();

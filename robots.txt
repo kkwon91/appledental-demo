@@ -1,0 +1,3 @@
+# 데모 사이트 — 원본(appledental.kr)과 중복 노출을 막기 위해 모든 로봇 차단
+User-agent: *
+Disallow: /
