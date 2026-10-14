@@ -16,16 +16,16 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="admin.css?v=20261014">
+<link rel="stylesheet" href="admin.css?v=20261015">
 <script>document.documentElement.className += ' js';</script>
 </head>
 <body class="ad">
 <a class="ad-skip" href="#ad-main">본문 바로가기</a>
 <noscript><p class="ad-noscript">관리자 데모는 자바스크립트가 켜져 있어야 동작합니다.</p></noscript>
 
-<!-- 로그인 -->
+<!-- 로그인(로그인 뒤에는 문서에서 떼어 둔다 — app.js) -->
 <div class="ad-login" id="ad-login" hidden>
-  <div class="ad-login__panel">
+  <main class="ad-login__panel" id="ad-login-main" tabindex="-1">
     <a class="ad-login__home" href="../"><img class="ad-login__logo" src="../assets/img/brand/logo-color.png" alt="희망을 심는 사과나무치과병원 Apple tree Dental Hospital — 사이트로 가기" width="526" height="110"></a>
     <p class="ad-login__privacy"><span class="ad-dot ad-dot--blue" aria-hidden="true"></span>개인정보 취급 화면 · 데모는 예시 데이터</p>
     <h1 class="ad-login__title">관리자 로그인</h1>
@@ -52,7 +52,7 @@
       <button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-fill-demo>데모 계정 넣기</button>
     </div>
     <p class="ad-login__back"><a class="ad-arrow" href="../">사이트로 돌아가기</a></p>
-  </div>
+  </main>
   <figure class="ad-login__photo" aria-hidden="true">
     <img src="../assets/img/photo/a4_3.webp" alt="" width="1400" height="800" decoding="async">
   </figure>
@@ -79,7 +79,7 @@
         <li><a class="ad-nav__a" href="#/answers" data-route="answers"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.6v.4"/></svg><span class="ad-nav__t">질문 답 페이지</span></a></li>
         <li><a class="ad-nav__a" href="#/columns" data-route="columns"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5l4 4L9 19H5v-4z"/><path d="M13.5 6.5l4 4"/></svg><span class="ad-nav__t">건강정보·칼럼</span><span class="ad-nav__n" data-count="columns"></span></a></li>
         <li><a class="ad-nav__a" href="#/news" data-route="news"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10v4h3l6 4V6l-6 4z"/><path d="M16.5 9.2a3.8 3.8 0 0 1 0 5.6M18.8 7a7 7 0 0 1 0 10"/></svg><span class="ad-nav__t">소식 게시판</span></a></li>
-        <li><a class="ad-nav__a" href="#/reviews" data-route="reviews"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 16.4l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z"/></svg><span class="ad-nav__t">리뷰</span></a></li>
+        <li><a class="ad-nav__a" href="#/reviews" data-route="reviews"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 16.4l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z"/></svg><span class="ad-nav__t">리뷰 활용 <span class="ad-nav__s">검토 전</span></span></a></li>
       </ul>
       <p class="ad-nav__group" id="ad-g3">성과</p>
       <ul class="ad-nav__list" aria-labelledby="ad-g3">
@@ -103,7 +103,7 @@
   </aside>
   <div class="ad-scrim" id="ad-scrim" data-act="nav-close" hidden></div>
   <div class="ad-body">
-    <p class="ad-privacy" role="note"><span class="ad-privacy__k">개인정보 취급 화면</span><span class="ad-privacy__sep" aria-hidden="true">·</span><span>데모는 예시 데이터</span><span class="ad-privacy__more">— 화면을 비워 둔 채 자리를 뜨지 마세요. 연락처는 가려 보이고, 열어 본 기록이 남습니다.</span></p>
+    <aside class="ad-privacy" aria-label="개인정보 취급 안내"><span class="ad-privacy__k">개인정보 취급 화면</span><span class="ad-privacy__sep" aria-hidden="true">·</span><span>데모는 예시 데이터</span><span class="ad-privacy__more">— 화면을 비워 둔 채 자리를 뜨지 마세요. 연락처는 가려 보이고, 열어 본 기록이 남습니다.</span></aside>
     <header class="ad-top">
       <button class="ad-top__menu" type="button" data-act="nav-open" aria-controls="ad-side" aria-expanded="false"><svg class="ad-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7h17M3.5 12h17M3.5 17h11"/></svg><span>메뉴</span></button>
       <p class="ad-top__where" id="ad-where" aria-live="polite"></p>
@@ -114,7 +114,7 @@
         <button class="ad-btn ad-btn--line ad-btn--sm ad-top__out" type="button" data-act="logout">로그아웃</button>
       </div>
     </header>
-    <main class="ad-main" id="ad-main" tabindex="-1">
+    <main class="ad-main" id="ad-main" tabindex="-1" hidden>
       <p class="ad-loading">불러오는 중…</p>
     </main>
   </div>
@@ -125,12 +125,12 @@
 <p class="ad-sr" id="ad-live" aria-live="polite"></p>
 <div id="ad-layer"></div>
 
-<script src="js/core.js?v=20261014" defer></script>
-<script src="js/charts.js?v=20261014" defer></script>
-<script src="js/views-ops.js?v=20261014" defer></script>
-<script src="js/views-content.js?v=20261014" defer></script>
-<script src="js/views-insight.js?v=20261014" defer></script>
-<script src="js/views-site.js?v=20261014" defer></script>
-<script src="js/app.js?v=20261014" defer></script>
+<script src="js/core.js?v=20261015" defer></script>
+<script src="js/charts.js?v=20261015" defer></script>
+<script src="js/views-ops.js?v=20261015" defer></script>
+<script src="js/views-content.js?v=20261015" defer></script>
+<script src="js/views-insight.js?v=20261015" defer></script>
+<script src="js/views-site.js?v=20261015" defer></script>
+<script src="js/app.js?v=20261015" defer></script>
 </body>
 </html>

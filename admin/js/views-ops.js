@@ -110,7 +110,8 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════
-  // 병원 확인 필요(내부 원문 141건 → 중립 문구 25건, seed.checks)
+  // 병원 확인 필요(내부 원문 141건 → 주제 25건, seed.checks)
+  //   공개 데모 파일에는 주제(분야·제목·관련 페이지)만 싣는다 — 자세한 질문은 병원에 따로 보내는 확인 질문지(비공개)에 있다.
   // ════════════════════════════════════════════════════════════════════════
   var CHECK_STATUS = [['ask', '확인 요청'], ['answered', '답변 받음'], ['applied', '반영 완료'], ['hold', '보류']];
   AA.checks = {
@@ -139,14 +140,14 @@
       return '<li class="ad-checks__item' + (c.status === 'applied' ? ' is-done' : '') + '" id="chk-' + esc(c.id) + '">' +
         '<div><p class="ad-checks__meta"><span class="ad-checks__area">' + esc(c.area) + '</span>' + (c.priority === 'high' ? '<span class="ad-badge ad-badge--ink">중요</span>' : '') +
         (c.status === 'answered' ? '<span class="ad-badge ad-badge--contacted">답변 받음</span>' : c.status === 'applied' ? '<span class="ad-badge ad-badge--done">' + icon('check') + '반영 완료</span>' : c.status === 'hold' ? '<span class="ad-badge ad-badge--spam">보류</span>' : '') + '</p>' +
-        '<h3 class="ad-checks__t">' + esc(c.title) + '</h3><p class="ad-checks__text">' + esc(c.text) + '</p>' +
+        '<h3 class="ad-checks__t">' + esc(c.title) + '</h3>' + (c.text ? '<p class="ad-checks__text">' + esc(c.text) + '</p>' : '') +
         '<p class="ad-checks__pages">' + (c.pages || []).slice(0, 4).map(function (p) { return AA.siteLink(p); }).join('') + '<span class="muted">비슷한 확인 ' + esc(c.merged) + '건을 합쳤습니다</span></p></div>' +
         '<div class="ad-checks__ctl"><label class="ad-field"><span class="ad-field__label">진행</span><select class="ad-select ad-input--sm" data-change="check-status" data-id="' + esc(c.id) + '" aria-label="' + esc(c.title) + ' 진행 상태">' + opts2 + '</select></label></div></li>';
     }).join('');
     return '<section class="ad-card" id="dash-checks" aria-labelledby="dash-checks-t">' +
       '<div class="ad-card__head"><div><h2 class="ad-card__title" id="dash-checks-t">병원 확인 필요 <span class="muted tnum">' + (list.length - applied) + '건</span></h2>' +
-      '<p class="ad-card__sub">새 홈페이지를 만들며 원본끼리 엇갈리거나 근거가 필요한 내용을 모았습니다. 병원에서 알려 주시면 모든 페이지를 같은 값으로 맞춥니다.</p></div>' +
-      '<div class="ad-actions"><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="check-copy">' + icon('copy') + '병원에 보낼 목록 복사</button></div></div>' +
+      '<p class="ad-card__sub">새 홈페이지를 만들며 원본끼리 엇갈리거나 근거가 필요한 내용을 주제별로 모았습니다. 병원에서 알려 주시면 모든 페이지를 같은 값으로 맞춥니다. 공개 데모에는 주제만 싣고, 자세한 질문은 병원에 따로 보내 드리는 확인 질문지에 있습니다.</p></div>' +
+      '<div class="ad-actions"><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="check-copy">' + icon('copy') + '확인 주제 목록 복사</button></div></div>' +
       '<div class="ad-grid ad-grid--4" style="margin-bottom:14px">' +
       miniStat('남은 확인', (list.length - applied) + '건') + miniStat('중요', high + '건') + miniStat('답변 받음', answered + '건') + miniStat('반영 완료', applied + '건') + '</div>' +
       '<div class="ad-chips" role="group" aria-label="분야로 거르기" style="margin-bottom:12px">' +
@@ -159,17 +160,17 @@
       (shown.length > limit ? '<p style="margin-top:12px"><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="check-all">모두 보기 (' + shown.length + '건)</button></p>' : '') +
       '</section>';
   }
-  function miniStat(k, v) { return '<div class="ad-card" style="padding:12px 14px"><p class="ad-kpi__label" style="font-size:13.5px">' + esc(k) + '</p><p style="font-size:24px;font-weight:700;letter-spacing:-.02em">' + esc(v) + '</p></div>'; }
+  function miniStat(k, v) { return '<div class="ad-card" style="padding:12px 14px"><p class="ad-kpi__label" style="font-size:var(--fs-xs)">' + esc(k) + '</p><p style="font-size:24px;font-weight:700;letter-spacing:-.02em">' + esc(v) + '</p></div>'; }
   var checkActions = {
     'check-area': function (el) { checkUi.area = el.getAttribute('data-area') || ''; AA.rerender(); },
     'check-all': function () { checkUi.all = true; AA.rerender(); },
     'check-copy': function () {
       var open = AA.checks.open();
       var H = AA.seed.hospital || {};
-      var text = H.name + ' 홈페이지 리뉴얼 — 병원 확인 요청 ' + open.length + '건\n\n' + open.map(function (c, i) {
-        return (i + 1) + '. [' + c.area + '] ' + c.title + '\n' + c.text + '\n관련 페이지: ' + (c.pages || []).map(function (p) { return AA.pageLabel(p); }).join(', ');
+      var text = H.name + ' 홈페이지 리뉴얼 — 병원 확인 주제 ' + open.length + '건(자세한 질문은 확인 질문지)\n\n' + open.map(function (c, i) {
+        return (i + 1) + '. [' + c.area + '] ' + c.title + (c.text ? '\n' + c.text : '') + '\n관련 페이지: ' + (c.pages || []).map(function (p) { return AA.pageLabel(p); }).join(', ');
       }).join('\n\n');
-      var done = function () { AA.toast('확인 요청 ' + open.length + '건을 복사했습니다'); };
+      var done = function () { AA.toast('확인 주제 ' + open.length + '건을 복사했습니다'); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { AA.download('병원확인요청.txt', text); });
       else AA.download('병원확인요청.txt', text);
     },
@@ -343,7 +344,7 @@
     var sc = AA.leads.sc(l.selfcheckResult);
     var from = AA.leads.from(l);
     return '<tr class="' + (l.status === 'new' ? 'is-new' : '') + (sel[l.id] ? ' is-sel' : '') + '">' +
-      '<td class="cell-check"><input class="ad-check" type="checkbox" data-change="lead-sel" data-id="' + esc(l.id) + '"' + (sel[l.id] ? ' checked' : '') + ' aria-label="' + esc(l.name + ' ' + AA.fmt.dt(l.createdAt) + ' 신청 선택') + '"></td>' +
+      '<td class="cell-check"><label class="ad-check-hit"><input class="ad-check" type="checkbox" data-change="lead-sel" data-id="' + esc(l.id) + '"' + (sel[l.id] ? ' checked' : '') + ' aria-label="' + esc(l.name + ' ' + AA.fmt.dt(l.createdAt) + ' 신청 선택') + '"></label></td>' +
       '<td class="cell-head" data-label="이름"><button class="ad-rowbtn" type="button" data-act="lead-open" data-id="' + esc(l.id) + '">' + esc(l.name) + '</button> ' + (l.example ? '<span class="ad-badge ad-badge--example">예시</span>' : '<span class="ad-badge ad-badge--plain">이 브라우저</span>') + '</td>' +
       '<td data-label="신청일시" class="tnum nw">' + esc(AA.fmt.dt(l.createdAt)) + '<br><span class="t-cell-sm">' + esc(AA.fmt.rel(l.createdAt)) + '</span></td>' +
       '<td data-label="연락처" class="tnum nw">' + esc(AA.maskPhone(l.phone || l.phoneDigits)) + '</td>' +
@@ -385,7 +386,7 @@
         '</div>' +
         (selIds.length ? '<div class="ad-bulk" role="group" aria-label="선택한 신청 처리"><span>선택 ' + selIds.length + '건</span><button class="ad-btn ad-btn--sm" type="button" data-act="lead-bulk" data-s="contacted">연락함으로</button><button class="ad-btn ad-btn--sm" type="button" data-act="lead-bulk" data-s="done">완료로</button><button class="ad-btn ad-btn--sm" type="button" data-act="lead-bulk" data-s="spam">스팸으로</button><button class="ad-btn ad-btn--sm ad-btn--ghost" type="button" data-act="lead-unsel" style="color:inherit">선택 해제</button></div>' : '') +
         '<p class="ad-count" aria-live="polite">' + list.length + '건' + (list.length !== all.length ? ' (전체 ' + all.length + '건 중)' : '') + '</p>' +
-        '<div class="ad-table-wrap"><table class="ad-table ad-table--cards"><caption class="ad-sr">상담 신청 목록</caption><thead><tr><th class="ad-th-check"><input class="ad-check" type="checkbox" data-change="lead-sel-all" aria-label="보이는 신청 모두 선택"' + (list.length && list.every(function (l) { return sel[l.id]; }) ? ' checked' : '') + '></th><th>이름</th><th>신청일시</th><th>연락처</th><th>진료 분야</th><th>신청 위치</th><th>자가진단</th><th>희망 연락</th><th>상태</th></tr></thead><tbody>' +
+        '<div class="ad-table-wrap"><table class="ad-table ad-table--cards"><caption class="ad-sr">상담 신청 목록</caption><thead><tr><th class="ad-th-check"><label class="ad-check-hit"><input class="ad-check" type="checkbox" data-change="lead-sel-all" aria-label="보이는 신청 모두 선택"' + (list.length && list.every(function (l) { return sel[l.id]; }) ? ' checked' : '') + '></label></th><th>이름</th><th>신청일시</th><th>연락처</th><th>진료 분야</th><th>신청 위치</th><th>자가진단</th><th>희망 연락</th><th>상태</th></tr></thead><tbody>' +
         (list.length ? list.map(leadRow).join('') : '<tr class="no-check"><td colspan="9">' + AA.emptyHtml('조건에 맞는 신청이 없습니다', '거르기 조건을 바꿔 보세요') + '</td></tr>') +
         '</tbody></table></div>';
     },
@@ -419,8 +420,9 @@
         AA.toast('상담 신청 ' + list.length + '건을 내려받았습니다(연락처는 가림)');
       },
       // 서랍 안
+      // 서랍 본문을 다시 그려도 포커스는 누른 버튼(같은 동작·같은 값)에 남는다(core.js AA.drawer.setBody)
       'lead-set': function (el) { var id = el.getAttribute('data-id'); var s = el.getAttribute('data-s'); AA.leads.setStatus(id, s); AA.toast('‘' + STATUS[s] + '’(으)로 바꿨습니다'); refreshLead(id); },
-      'lead-phone': function (el) { var id = el.getAttribute('data-id'); AA.audit('연락처 열람', id); revealed[id] = true; refreshLead(id); },
+      'lead-phone': function (el) { var id = el.getAttribute('data-id'); AA.audit('연락처 열람', id); revealed[id] = true; refreshLead(id, '.ad-phone a'); },
       'lead-memo': function (el) { var id = el.getAttribute('data-id'); var ta = d.getElementById('lead-memo'); AA.leads.setMemo(id, ta ? ta.value.slice(0, 1000) : ''); AA.toast('메모를 저장했습니다'); refreshLead(id); },
       'lead-nav': function (el) { openLead(el.getAttribute('data-id')); },
     },
@@ -472,10 +474,11 @@
     AA.drawer.open({ eyebrow: '상담 신청 · ' + AA.fmt.date(l.createdAt), title: l.name + ' · ' + (l.subject === '미정' ? '잘 모르겠어요' : l.subject || '분야 미선택'), html: leadBody(l), foot: leadFoot(l), onClose: function () { AA.rerender(); } });
   }
   AA.openLead = openLead;
-  function refreshLead(id) {
+  /** 열린 서랍만 새로 그린다. focusSel = 누른 버튼이 사라질 때(번호 보기 → 전화 걸기) 대신 포커스를 줄 곳 */
+  function refreshLead(id, focusSel) {
     var l = AA.leads.get(id);
     if (!l || !AA.drawer.el) return;
-    AA.drawer.setBody(leadBody(l));
+    AA.drawer.setBody(leadBody(l), focusSel);
     AA.drawer.setFoot(leadFoot(l));
     AA.refreshBadges();
   }

@@ -1,3 +1,5 @@
-# 데모 사이트 — 원본(appledental.kr)과 중복 노출을 막기 위해 모든 로봇 차단
+# 데모 사이트(홈페이지 리뉴얼 시안) — 원본(appledental.kr)과 중복 노출을 막기 위해 모든 로봇을 막는 규칙입니다.
+# 이 파일은 하위 경로(/appledental-demo/robots.txt)에 있어 로봇이 읽지 않습니다. 로봇은 호스트 맨 위의 /robots.txt 만 읽습니다.
+# 실제 검색 차단은 모든 HTML 페이지의 <meta name="robots" content="noindex,nofollow"> 가 합니다.
 User-agent: *
 Disallow: /

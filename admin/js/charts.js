@@ -16,6 +16,7 @@
       v1: css('--viz-1', '#2D4155'), accent: css('--viz-accent', '#0A78B0'), muted: css('--viz-muted', '#B4BCC6'),
       ord: [css('--ord-1', '#9AA6B4'), css('--ord-2', '#6A7C92'), css('--ord-3', '#40556D'), css('--ord-4', '#132538')],
       surface: css('--sheet', '#FCFAF6'), ink: css('--ink', '#132538'),
+      fs: parseFloat(css('--fs-xs', '13.5')) || 13.5, // 차트 글자 크기(PC 13.5px · 1099px 이하 14px) — 글자 폭 어림에도 쓴다
     };
   }
   var seq = 0;
@@ -47,7 +48,7 @@
   }
   var textW = function (s, px) { // 대략 글자 폭(한글 ≈ 0.95em, 그 밖 ≈ 0.56em)
     var n = 0; String(s || '').split('').forEach(function (ch) { n += /[ㄱ-힝]/.test(ch) ? 0.95 : /[0-9.,%·]/.test(ch) ? 0.58 : 0.6; });
-    return n * (px || 13.5);
+    return n * (px || C.fs || 13.5);
   };
 
   // ── 종류별 그리기: (spec, width) → { svg, marks:[{x,y,tip,label}] } ───────────────────────
@@ -187,7 +188,7 @@
           parts.push('<rect class="m" data-i="' + i + '" x="' + (x + gap).toFixed(1) + '" y="' + by + '" width="' + Math.max(0, wd - gap).toFixed(1) + '" height="' + thick + '" fill="' + cols[k] + '"/>');
           var pct = total ? Math.round((v / total) * 100) : 0;
           var label = pct + '%';
-          if (wd - gap > textW(label, 13.5) + 10) parts.push('<text x="' + (x + gap + (wd - gap) / 2).toFixed(1) + '" y="' + (by + thick / 2 + 5) + '" text-anchor="middle" class="' + (k >= 2 ? 't-on' : 't-strong') + '">' + label + '</text>');
+          if (wd - gap > textW(label) + 10) parts.push('<text x="' + (x + gap + (wd - gap) / 2).toFixed(1) + '" y="' + (by + thick / 2 + 5) + '" text-anchor="middle" class="' + (k >= 2 ? 't-on' : 't-strong') + '">' + label + '</text>');
         }
         tip.push((s.names ? s.names[k] : '') + ' ' + fmtN(v) + (s.totalUnit || '') + ' (' + (total ? Math.round((v / total) * 100) : 0) + '%)');
         x += wd;

@@ -31,7 +31,7 @@
   AA.KEYS = {
     leads: 'apple_admin_leads', online: 'apple_admin_online', doctors: 'apple_admin_doctors', clinics: 'apple_admin_clinics',
     answers: 'apple_admin_answers', columns: 'apple_admin_columns', news: 'apple_admin_news', pricing: 'apple_admin_pricing',
-    hours: 'apple_admin_hours', notice: 'apple_admin_notice', main: 'apple_admin_main', reviews: 'apple_admin_reviews',
+    hours: 'apple_admin_hours', notice: 'apple_admin_notice', main: 'apple_admin_main',
     hospital: 'apple_admin_hospital', checks: 'apple_admin_checks', audit: 'apple_admin_audit', ui: 'apple_admin_ui',
   };
   AA.store = {
@@ -94,7 +94,7 @@
     time: function (t) { var k = AA.kst(t); return pad(k.hh) + ':' + pad(k.mm); },
     rel: function (t) {
       var ms = Date.now() - Date.parse(t);
-      if (ms < 0) return AA.fmt.dt(t);
+      if (ms < 0) return '방금 전'; // 다른 탭·기기의 시계가 조금 빠른 경우(예시 데이터는 지금보다 뒤로 옮기지 않는다)
       var m = Math.floor(ms / 60000);
       if (m < 1) return '방금 전';
       if (m < 60) return m + '분 전';
@@ -229,17 +229,53 @@
   // ── 서랍(상세)·대화상자 ──────────────────────────────────────────────────────────
   var layer = function () { return d.getElementById('ad-layer'); };
   var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+  function focusables(box) { return Array.prototype.filter.call(box.querySelectorAll(FOCUSABLE), function (x) { return x.offsetParent !== null; }); }
+  function focusEl(x) { if (!x) return; try { x.focus({ preventScroll: true }); } catch (e) { x.focus(); } }
+  /** Tab 을 상자 안에서만 돌린다. 포커스가 상자 밖(body 등)에 있으면 상자 첫·끝 요소로 데려온다 */
   function trap(box, e) {
     if (e.key !== 'Tab') return;
-    var f = Array.prototype.filter.call(box.querySelectorAll(FOCUSABLE), function (x) { return x.offsetParent !== null; });
+    var f = focusables(box);
     if (!f.length) return;
+    if (!box.contains(d.activeElement)) { e.preventDefault(); focusEl(e.shiftKey ? f[f.length - 1] : f[0]); return; }
     if (e.shiftKey && d.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
     else if (!e.shiftKey && d.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+  /** 다시 그린 뒤 같은 버튼을 찾을 열쇠(id 또는 data-act + 구분 속성) */
+  function focusKey(x) {
+    if (!x || !x.getAttribute) return '';
+    var clean = function (v) { return String(v).replace(/["\\]/g, ''); };
+    if (x.id) return '[id="' + clean(x.id) + '"]';
+    var a = x.getAttribute('data-act');
+    if (!a) return '';
+    var k = '[data-act="' + clean(a) + '"]';
+    ['data-id', 'data-s', 'data-i', 'data-k', 'data-dir'].forEach(function (n) { var v = x.getAttribute(n); if (v != null) k += '[' + n + '="' + clean(v) + '"]'; });
+    return k;
+  }
+  /** 상자 안을 새로 그리되, 포커스가 그 안에 있었으면 같은 버튼으로 돌려준다.
+      그 버튼이 사라졌으면 fallbacks(상자 안 선택자 또는 요소)를 차례로 시도한다 */
+  function swapHtml(box, html, fallbacks) {
+    var a = d.activeElement;
+    var inside = !!(a && box.contains(a));
+    var key = inside ? focusKey(a) : '';
+    box.innerHTML = html;
+    if (!inside) return;
+    var ok = function (n) { return n && !n.disabled && n.offsetParent !== null ? n : null; };
+    var n = key ? ok(box.querySelector(key)) : null;
+    (fallbacks || []).forEach(function (f) { if (!n && f) n = ok(typeof f === 'string' ? box.querySelector(f) : f); });
+    focusEl(n);
   }
   AA.drawer = {
     el: null,
     last: null,
     onClose: null,
+    /** 서랍이 열려 있는 동안 문서 전체에서 Esc·Tab 을 받는다(포커스가 서랍 밖으로 빠져도 닫기·가둠이 동작) */
+    onKey: function (e) {
+      var el = AA.drawer.el;
+      if (!el || e.defaultPrevented) return;
+      if (d.querySelector('.ad-dialog')) return; // 확인창이 위에 있으면 확인창이 처리한다
+      if (e.key === 'Escape') { e.preventDefault(); AA.drawer.close(); return; }
+      trap(el.querySelector('.ad-drawer__panel') || el, e);
+    },
     /** o: { eyebrow, title, html, foot, wide, onClose, focus(selector) } */
     open: function (o) {
       this.close(true);
@@ -260,19 +296,18 @@
       layer().appendChild(el);
       d.documentElement.style.overflow = 'hidden';
       el.addEventListener('mousedown', function (e) { if (e.target === el) AA.drawer.close(); });
-      el.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { e.stopPropagation(); AA.drawer.close(); return; }
-        trap(el, e);
-      });
+      d.addEventListener('keydown', this.onKey);
       var first = (o.focus && el.querySelector(o.focus)) || el.querySelector('.ad-drawer__x');
-      setTimeout(function () { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }, 20);
+      setTimeout(function () { focusEl(first); }, 20);
       if (typeof o.after === 'function') o.after(el);
       return el;
     },
     body: function () { return this.el ? this.el.querySelector('.ad-drawer__body') : null; },
-    setBody: function (html) { var b = this.body(); if (b) b.innerHTML = html; },
-    setFoot: function (html) { var f = this.el && this.el.querySelector('.ad-drawer__foot'); if (f) f.innerHTML = html; },
+    /** 본문·바닥 다시 그리기 — 누른 버튼이 새로 그려져도 포커스가 같은 버튼에 남는다(없으면 fallback 선택자 → 닫기 버튼) */
+    setBody: function (html, fallback) { var b = this.body(); if (b) swapHtml(b, html, [fallback, this.el.querySelector('.ad-drawer__x')]); },
+    setFoot: function (html) { var f = this.el && this.el.querySelector('.ad-drawer__foot'); if (f) swapHtml(f, html, [this.el.querySelector('.ad-drawer__x')]); },
     close: function (silent) {
+      d.removeEventListener('keydown', this.onKey);
       if (!this.el) return;
       var el = this.el;
       this.el = null;
@@ -283,11 +318,11 @@
       if (cb && !silent) cb();
       if (silent) return;
       var target = this.last && this.last.focus && d.body.contains(this.last) ? this.last : this.lastKey ? d.querySelector('#ad-main ' + this.lastKey) : null;
-      if (target) { try { target.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } }
+      if (target) focusEl(target);
     },
   };
   AA.actions['drawer-close'] = function () { AA.drawer.close(); };
-  /** 확인 대화상자 → Promise<boolean> */
+  /** 확인 대화상자 → Promise<boolean>. 되돌릴 수 없는 일(o.danger)은 첫 포커스를 '취소'에 둔다(Enter 한 번에 지워지지 않게) */
   AA.confirm = function (o) {
     return new Promise(function (resolve) {
       var id = 'ad-cf-' + Date.now().toString(36);
@@ -299,10 +334,10 @@
         '<button type="button" class="ad-btn ' + (o.danger ? 'ad-btn--danger' : 'ad-btn--ink') + '" data-v="1">' + esc(o.ok || '확인') + '</button></div></div>';
       var last = d.activeElement;
       layer().appendChild(el);
-      var done = function (v) { el.remove(); if (last && last.focus) { try { last.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } } resolve(v); };
+      var done = function (v) { el.remove(); if (last && last.focus && d.body.contains(last)) focusEl(last); resolve(v); };
       el.addEventListener('click', function (e) { var b = e.target.closest('[data-v]'); if (b) done(b.getAttribute('data-v') === '1'); else if (e.target === el) done(false); });
-      el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); done(false); } trap(el, e); });
-      setTimeout(function () { el.querySelector('[data-v="1"]').focus(); }, 20);
+      el.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); done(false); return; } trap(el, e); });
+      setTimeout(function () { el.querySelector(o.danger ? '[data-v="0"]' : '[data-v="1"]').focus(); }, 20);
     });
   };
 
@@ -436,32 +471,41 @@
   };
 
   // ── 예시 데이터를 오늘에 맞추기(나중에 열어도 '이번 주'가 살아 있게) ──────────────────────
+  //   하루 단위로 옮겨 요일·시각 모양(오전 신청·야간 신청)은 그대로 두되, 옮긴 기록이 '지금'보다 뒤가 되지 않게 한다.
+  //   예시 기록 가운데 가장 늦은 시각(예: 10.14 09:40)을 기준으로 삼아, 지금 그 시각을 아직 지나지 않았으면(이른 아침) 하루 덜 옮긴다.
+  //   그래서 이른 시간에 열면 예시 기록은 어제까지 있고 오늘 칸은 비어 있다(이 브라우저에서 넣은 실제 신청만 오늘에 들어감).
   AA.prepareSeed = function (seed) {
-    var today = AA.kst().ymd;
-    var off = Math.max(0, AA.daysBetween(seed.demo.today, today));
+    var now = Date.now();
+    var last = 0;
+    var see = function (t) { var x = Date.parse(t); if (!isNaN(x) && x > last) last = x; };
+    (seed.leads || []).forEach(function (l) { see(l.createdAt); (l.history || []).forEach(function (h) { see(h.at); }); });
+    (seed.online || []).forEach(function (q) { see(q.createdAt); if (q.answer) see(q.answer.at); });
+    ((seed.forbiddenCheck || {}).drafts || []).forEach(function (x) { see(x.createdAt); (x.history || []).forEach(function (h) { see(h.at); }); });
+    if (!last) last = Date.parse(seed.demo.today + 'T00:00:00+09:00');
+    var off = Math.floor((now - last) / 86400000); // 기준 시각 + off일 ≤ 지금(시계가 예시보다 앞이면 음수 — 뒤로 옮긴다)
+    var today = AA.kst(now).ymd;
     AA.offset = off;
-    AA.REF = off ? today : seed.demo.today;
+    AA.REF = today; // '오늘'은 언제나 실제 오늘(한국 시간)
+    seed.demo.today = today;
     if (!off) return seed;
     var ms = off * 86400000;
     var iso = function (t) { return t ? new Date(Date.parse(t) + ms).toISOString() : t; };
     var ymd = function (t) { return t ? AA.addDays(t, off) : t; };
     (seed.leads || []).forEach(function (l) { l.createdAt = iso(l.createdAt); (l.history || []).forEach(function (h) { h.at = iso(h.at); }); });
     (seed.online || []).forEach(function (q) { q.createdAt = iso(q.createdAt); if (q.answer) q.answer.at = iso(q.answer.at); });
-    (seed.reviews || []).forEach(function (r) { r.date = ymd(r.date); });
     var fc = seed.forbiddenCheck || {};
     (fc.drafts || []).forEach(function (x) { x.date = ymd(x.date); x.createdAt = iso(x.createdAt); (x.history || []).forEach(function (h) { h.at = iso(h.at); }); });
     ((seed.selfcheck && seed.selfcheck.example && seed.selfcheck.example.daily) || []).forEach(function (x) { x.date = ymd(x.date); });
     ((seed.conversion && seed.conversion.daily) || []).forEach(function (x) { x.date = ymd(x.date); });
     if (seed.aeo && seed.aeo.measures) seed.aeo.measures = seed.aeo.measures.map(ymd);
     seed.demo.start = ymd(seed.demo.start);
-    seed.demo.today = today;
     return seed;
   };
 
   // ── 라우터·화면 틀 ────────────────────────────────────────────────────────────
   AA.TITLES = {
     dashboard: '대시보드', leads: '상담 신청', online: '온라인 상담', doctors: '의료진', clinics: '진료 페이지', answers: '질문 답 페이지',
-    columns: '건강정보·칼럼', news: '소식 게시판', reviews: '리뷰', selfcheck: '자가진단 통계', conversion: '전환 개선', aeo: 'AI 검색 노출',
+    columns: '건강정보·칼럼', news: '소식 게시판', reviews: '리뷰 활용(검토 전)', selfcheck: '자가진단 통계', conversion: '전환 개선', aeo: 'AI 검색 노출',
     pricing: '비급여 진료비', hours: '진료시간·휴진', notice: '공지 띠배너', main: '메인 화면', hospital: '병원 정보',
   };
   AA.ORDER = ['dashboard', 'leads', 'online', 'doctors', 'clinics', 'answers', 'columns', 'news', 'reviews', 'selfcheck', 'conversion', 'aeo', 'pricing', 'hours', 'notice', 'main', 'hospital'];
@@ -500,6 +544,7 @@
       main.innerHTML = v.render(r);
       if (typeof v.after === 'function') v.after(main, r);
       if (AA.chart && AA.chart.mountAll) AA.chart.mountAll(main);
+      AA.markScroll(main);
     } catch (e) {
       main.innerHTML = '<div class="ad-note ad-note--warn"><span>화면을 그리지 못했습니다: ' + esc(e && e.message) + '</span></div>';
       if (w.console) w.console.error(e);
@@ -535,12 +580,25 @@
       if (n > 0) el.setAttribute('aria-label', n + '건'); else el.removeAttribute('aria-label');
     });
   };
+  // 좁은 화면(1099px 이하)의 메뉴 서랍: 열려 있는 동안 Tab 은 메뉴 안에서만 돌고, 뒤 화면(.ad-body)은 inert 로 막는다
+  function navKey(e) {
+    if (e.key !== 'Tab' || AA.drawer.el || d.querySelector('.ad-dialog')) return;
+    var side = d.getElementById('ad-side');
+    if (side) trap(side, e);
+  }
+  function setBodyInert(on) {
+    var b = d.querySelector('.ad-body');
+    if (!b) return;
+    if (on) { b.setAttribute('inert', ''); b.inert = true; } else { b.removeAttribute('inert'); b.inert = false; }
+  }
   AA.navOpen = function () {
     var app = d.getElementById('ad-app');
     if (!app || app.classList.contains('nav-open')) return;
     AA._navLast = d.activeElement;
     app.classList.add('nav-open');
     d.getElementById('ad-scrim').hidden = false;
+    setBodyInert(true);
+    d.addEventListener('keydown', navKey);
     var b = d.querySelector('.ad-top__menu'); if (b) b.setAttribute('aria-expanded', 'true');
     var c = d.querySelector('.ad-side__close'); if (c) setTimeout(function () { c.focus(); }, 30);
   };
@@ -549,9 +607,48 @@
     if (!app || !app.classList.contains('nav-open')) return;
     app.classList.remove('nav-open');
     d.getElementById('ad-scrim').hidden = true;
+    setBodyInert(false);
+    d.removeEventListener('keydown', navKey);
     var b = d.querySelector('.ad-top__menu'); if (b) b.setAttribute('aria-expanded', 'false');
     if (!silent && b) b.focus();
   };
+  // 메뉴가 열린 채 창을 넓혀 왼쪽 메뉴가 늘 보이는 폭이 되면 서랍 상태를 푼다(본문 inert 가 남지 않게)
+  if (w.matchMedia) {
+    var wide = w.matchMedia('(min-width: 1100px)');
+    var onWide = function () { if (wide.matches) AA.navClose(true); };
+    if (wide.addEventListener) wide.addEventListener('change', onWide); else if (wide.addListener) wide.addListener(onWide);
+  }
+
+  // ── 넘치는 표·코드 상자: 키보드로도 스크롤할 수 있게 tabindex·이름을 붙인다(넘칠 때만) ─────────────────
+  function scrollLabel(el) {
+    if (el.getAttribute('data-scroll-label')) return el.getAttribute('data-scroll-label');
+    var cap = el.querySelector('caption');
+    if (cap && cap.textContent.trim()) return cap.textContent.trim();
+    var box = el.closest ? el.closest('.ad-card, .ad-group, section') : null;
+    var h = box ? box.querySelector('h2, h3') : null;
+    if (h && h.textContent.trim()) return h.textContent.trim().replace(/\s+/g, ' ') + ' 표';
+    var t = d.getElementById('ad-h1');
+    return (t ? t.textContent.trim() + ' ' : '') + '표';
+  }
+  AA.markScroll = function (root) {
+    Array.prototype.forEach.call((root || d).querySelectorAll('.ad-table-wrap, .ad-tbl-wrap, .ad-ld'), function (el) {
+      if (el.hasAttribute('tabindex') && !el.hasAttribute('data-sx')) return; // 화면이 직접 정한 것은 그대로
+      var shut = el.closest && el.closest('details:not([open])'); // 접힌 '표로 보기' 안은 펼칠 때 잰다
+      var over = !shut && el.clientWidth > 0 && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1);
+      if (over) {
+        el.setAttribute('data-sx', '');
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'region');
+        el.setAttribute('aria-label', scrollLabel(el));
+      } else if (el.hasAttribute('data-sx')) {
+        ['data-sx', 'tabindex', 'role', 'aria-label'].forEach(function (n) { el.removeAttribute(n); });
+      }
+    });
+  };
+  var sxT = 0;
+  w.addEventListener('resize', function () { clearTimeout(sxT); sxT = setTimeout(function () { AA.markScroll(d.getElementById('ad-main')); }, 200); });
+  // '표로 보기'를 펼치면 그 안의 상자를 다시 잰다(toggle 은 거품이 없어 잡기 단계에서 받는다)
+  d.addEventListener('toggle', function (e) { var t = e.target; if (t && t.tagName === 'DETAILS' && t.open) AA.markScroll(t); }, true);
   AA.actions['nav-open'] = function () { AA.navOpen(); };
   AA.actions['nav-close'] = function () { AA.navClose(); };
 

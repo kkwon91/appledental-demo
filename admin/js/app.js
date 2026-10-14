@@ -9,9 +9,19 @@
   var ACC = { id: 'apple', pw: 'demo1234' }; // 데모용 — 실제 관리자 로그인은 실서비스 단계에서 서버 인증으로 바꾼다
 
   function $(id) { return d.getElementById(id); }
+  // 로그인 화면과 관리자 화면은 한쪽만 문서에 둔다 — 숨긴 쪽의 H1·main 이 남아 문서에 H1·main 이 둘이 되지 않게.
+  //   로그인 뒤에는 로그인 화면(#ad-login)을 떼어 두었다가(이벤트는 그대로) 로그아웃하면 다시 붙인다.
+  var loginEl = null;
+  function skipTo(id) { var s = d.querySelector('.ad-skip'); if (s) s.setAttribute('href', '#' + id); }
+  function focusH1() { var h = $('ad-h1'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } } }
   function showLogin() {
-    $('ad-app').hidden = true;
+    var app = $('ad-app');
+    if (loginEl && !loginEl.parentNode) app.parentNode.insertBefore(loginEl, app);
+    app.hidden = true;
+    var main = $('ad-main');
+    if (main) { main.hidden = true; main.innerHTML = '<p class="ad-loading">불러오는 중…</p>'; }
     $('ad-login').hidden = false;
+    skipTo('ad-login-main');
     d.title = '관리자 로그인 | 부천 사과나무치과병원';
     setTimeout(function () { var i = $('ad-login-id'); if (i) i.focus(); }, 30);
   }
@@ -22,10 +32,13 @@
     el.innerHTML = '<span class="ad-dot ' + (st.state === 'open' ? 'ad-dot--green' : 'ad-dot--off') + '" aria-hidden="true"></span>' + esc(st.short) + (st.state === 'open' ? ' · ' + esc(st.long.split(' · ')[1] || '') : '');
   }
   function start() {
-    $('ad-login').hidden = true;
+    var lg = $('ad-login');
+    if (lg) { loginEl = lg; lg.hidden = true; lg.remove(); }
     $('ad-app').hidden = false;
-    if (AA.seed) { AA.render({ top: true }); tick(); return; }
     var main = $('ad-main');
+    main.hidden = false;
+    skipTo('ad-main');
+    if (AA.seed) { AA.render({ top: true }); tick(); focusH1(); return; }
     main.innerHTML = '<p class="ad-loading">데이터를 불러오는 중…</p>';
     fetch('../assets/data/admin-seed.json', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -34,18 +47,18 @@
         AA.rules.init((seed.forbiddenCheck || {}).rules);
         if (!started) {
           started = true;
-          w.addEventListener('hashchange', function () { AA.drawer.close(true); AA.render(); });
+          w.addEventListener('hashchange', function () { if (!AA.session.on()) return; AA.drawer.close(true); AA.render(); });
           w.setInterval(tick, 60000);
           // 다른 탭(데모 사이트)에서 상담 신청·자가진단을 하면 바로 반영
           w.addEventListener('storage', function (e) {
-            if (!AA.seed || !e.key) return;
+            if (!AA.seed || !e.key || !AA.session.on()) return; // 로그아웃 중에는 숨은 화면을 다시 그리지 않는다(H1 이 둘이 되지 않게)
             if (e.key === 'apple_demo_leads') { AA.toast('새 상담 신청이 들어왔습니다'); if (!AA.drawer.el) AA.rerender(); else AA.refreshBadges(); }
             else if (e.key === 'apple_selfcheck_stats' && AA.route && (AA.route.name === 'selfcheck' || AA.route.name === 'dashboard') && !AA.drawer.el) AA.rerender();
           });
         }
         AA.render({ top: true });
         tick();
-        var h = $('ad-h1'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+        focusH1();
       })
       .catch(function (e) {
         main.innerHTML = '<div class="ad-note ad-note--warn"><span>' + AA.icon('warn') + '</span><span><span class="ad-note__t">관리자 데이터를 불러오지 못했습니다.</span> 사이트를 빌드한 뒤(node src/build.mjs) 웹 서버로 열어 주세요. (' + esc(e && e.message) + ')</span></div>';
@@ -55,7 +68,8 @@
   AA.actions.logout = function () {
     AA.session.set(false);
     AA.drawer.close(true);
-    try { w.history.replaceState(null, '', w.location.pathname); } catch (e) { w.location.hash = ''; }
+    AA.navClose(true);
+    try { w.history.replaceState(null, '', w.location.pathname + w.location.search); } catch (e) { w.location.hash = ''; }
     showLogin();
     AA.toast('로그아웃했습니다');
   };

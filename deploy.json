@@ -1,0 +1,7 @@
+{
+ "build": "ae740ffb326a",
+ "source": "3403368",
+ "sourceDirty": true,
+ "deployedAt": "2026-10-14T19:17:14.397Z",
+ "note": "데모 배포 표시(tools/deploy.mjs) — node tools/deploy.mjs --status 가 docs/ 와 견준다"
+}

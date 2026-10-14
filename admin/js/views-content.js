@@ -1,4 +1,4 @@
-/* 관리자 데모 — 콘텐츠: 의료진 · 진료 페이지 · 질문 답 페이지 · 건강정보·칼럼 · 소식 게시판 · 리뷰 */
+/* 관리자 데모 — 콘텐츠: 의료진 · 진료 페이지 · 질문 답 페이지 · 건강정보·칼럼 · 소식 게시판 · 리뷰 활용(검토 전 아이디어 — 리뷰 글은 싣지 않음) */
 (function () {
   'use strict';
   var w = window;
@@ -72,7 +72,7 @@
       var depts = (H.departments || []).filter(function (dp) { return list.some(function (x) { return x.dept === dp.id; }); });
       return AA.head({ no: AA.no('doctors'), eyebrow: '콘텐츠', title: '의료진',
         lead: '의료진 소개 페이지와 진료 페이지의 담당 의료진 카드에 나가는 내용입니다. 약력은 원본 그대로 두고, 한 줄 약력은 경력에서만 씁니다.' }) +
-        '<div class="ad-grid ad-grid--4" style="margin-bottom:16px">' + stat('치과의사', visible + '명') + stat('보건복지부 인증 전문의', spec + '명') + stat('진료과', (H.numbers || {}).departments + '개') + stat('병원 확인 중', AA.checks.list().filter(function (c) { return (c.doctors || []).length && c.status !== 'applied'; }).length + '건') + '</div>' +
+        '<div class="ad-grid ad-grid--4" style="margin-bottom:16px">' + stat('치과의사', visible + '명') + stat('보건복지부 인증 전문의', spec + '명') + stat('진료과', (H.numbers || {}).departments + '개') + stat('의료진 확인 요청', AA.checks.list().filter(function (c) { return (c.area === '의료진' || (c.doctors || []).length) && c.status !== 'applied'; }).length + '건') + '</div>' +
         (spec !== (H.numbers || {}).specialists ? '<p class="ad-note ad-note--warn" style="margin-bottom:14px"><span>' + icon('warn') + '</span><span>전문의 표시가 ' + spec + '명으로 바뀌었습니다. 홈·병원소개·질문 답의 ‘전문의 ' + esc((H.numbers || {}).specialists) + '명’도 함께 고쳐야 합니다.</span></p>' : '') +
         '<div class="ad-chips" role="group" aria-label="진료과로 거르기" style="margin-bottom:14px">' + [{ id: '', name: '전체' }].concat(depts).map(function (dp) {
           var n = dp.id ? list.filter(function (x) { return x.dept === dp.id; }).length : list.length;
@@ -115,7 +115,7 @@
       'doc-live': function (el) { var r = d.getElementById('doc-rules'); if (r) r.innerHTML = AA.rules.report(el.value); var c = d.getElementById('doc-count'); if (c) c.innerHTML = AA.counter(AA.textLen(el.value), 0, 90); },
     },
   };
-  function stat(k, v) { return '<div class="ad-card" style="padding:12px 14px"><p class="ad-kpi__label" style="font-size:13.5px">' + esc(k) + '</p><p style="font-size:24px;font-weight:700;letter-spacing:-.02em">' + esc(v) + '</p></div>'; }
+  function stat(k, v) { return '<div class="ad-card" style="padding:12px 14px"><p class="ad-kpi__label" style="font-size:var(--fs-xs)">' + esc(k) + '</p><p style="font-size:24px;font-weight:700;letter-spacing:-.02em">' + esc(v) + '</p></div>'; }
   AA.statCard = stat;
   function openDoc(id) {
     var x = AA.doctors.list().filter(function (y) { return y.id === id; })[0];
@@ -190,11 +190,17 @@
     var ok = items.filter(function (x) { return x.ok; }).length;
     return '<span class="ad-meter' + (ok === items.length ? ' is-full' : '') + '"><span class="ad-meter__bar"><span class="ad-meter__fill" style="width:' + Math.round((ok / items.length) * 100) + '%"></span></span><span class="tnum">' + ok + '/' + items.length + '</span></span>';
   }
+  /** 편집 중인 글 전부(금칙어 검사·저장 막기에 같은 범위를 쓴다) */
+  function edText(c, kind) {
+    return kind === 'answer'
+      ? [c.q, c.lead, c.basis].concat(c.body || []).concat(c.alsoAsked || []).join('\n')
+      : [c.title, c.description, c.h1, c.lead, c.basis].concat((c.faq || []).map(function (x) { return x.q + '\n' + x.a; })).join('\n');
+  }
   function sideHtml() {
     var c = ed.cur;
     var isA = ed.kind === 'answer';
     var checks = isA ? answerChecks(c) : clinicChecks(c);
-    var all = isA ? [c.q, c.lead].concat(c.body || []).concat(c.alsoAsked || []).join('\n') : [c.title, c.description, c.h1, c.lead].concat((c.faq || []).map(function (x) { return x.q + '\n' + x.a; })).join('\n');
+    var all = edText(c, ed.kind);
     return '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">AI 인용 점검</h2>' + checkList(checks) + '</section>' +
       citeCard(isA ? c.q : c.h1 || c.title, c.lead, isA ? '/answers/' + c.slug + '/' : c.path) +
       '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">의료광고 금칙어</h2>' + AA.rules.report(all) + '</section>';
@@ -237,6 +243,14 @@
     'ed-list-move': function (el) { var k = el.getAttribute('data-list'); var i = +el.getAttribute('data-i'); if (i < 1) return; var a = ed.cur[k]; a.splice(i - 1, 0, a.splice(i, 1)[0]); redrawList(k, k === 'alsoAsked' ? '같은 뜻 다른 질문' : '보충 문단'); },
     'ed-save': function () {
       var c = ed.cur;
+      // 다른 편집기(의료진·비급여·띠배너·팝업·온라인 상담)와 같은 규칙: 금칙어가 남아 있으면 저장하지 않는다
+      var hits = AA.rules.count(edText(c, ed.kind));
+      if (hits) {
+        AA.toast('금칙어를 고친 뒤 저장할 수 있습니다');
+        var m = d.getElementById('ed-msg');
+        if (m) { m.textContent = '의료광고 금칙어 ' + hits + '건 — ‘의료광고 금칙어’ 칸의 대신 쓸 말을 보고 고친 뒤 저장하세요'; m.classList.add('is-dirty'); }
+        return;
+      }
       if (ed.kind === 'clinic') {
         var all = clinicPages();
         var ov = AA.store.get(AA.KEYS.clinics, {}) || {};
@@ -609,78 +623,39 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════
-  // 리뷰(네이버 플레이스 옮겨 적기 · 내용은 로그인한 회원만)
+  // 리뷰 활용 — 법률·의료광고 심의 검토 전 아이디어
+  //   환자가 쓴 리뷰 글은 이 데모(공개 JSON·HTML)에 싣지 않는다. 회원 공개·흐리게 가리기 미리보기도 두지 않는다
+  //   (새 사이트에는 회원 기능이 없고, 흐림 효과는 글을 HTML 에 그대로 남겨 검색·AI 로봇이 읽는다).
+  //   화면은 검토할 점과, 싣기로 정할 때 지킬 설계 조건만 보여 준다.
   // ════════════════════════════════════════════════════════════════════════
-  var KW = ['친절해요', '설명을 잘해줘요', '주차하기 편해요', '대기 시간이 짧아요', '시설이 깔끔해요', '예약이 편해요'];
-  function reviewList() {
-    var ov = AA.store.get(AA.KEYS.reviews, {}) || {};
-    var base = (AA.seed.reviews || []).map(function (r) { return Object.assign({}, r, ov[r.id] || {}); });
-    var added = Array.isArray(ov._added) ? ov._added.map(function (r) { return Object.assign({ added: true }, r, ov[r.id] || {}); }) : [];
-    return added.concat(base).filter(function (r) { return !r.deleted; }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
-  }
   AA.views.reviews = {
     render: function () {
-      var list = reviewList();
-      var mem = list.filter(function (r) { return r.status === 'members'; }).length;
       var H = AA.seed.hospital;
-      return AA.head({ no: AA.no('reviews'), eyebrow: '콘텐츠', title: '리뷰',
-        lead: '네이버 플레이스에 남은 리뷰를 옮겨 적습니다. 의료광고 규정상 환자가 쓴 글은 누구나 보는 화면에 그대로 싣지 않으므로, 리뷰 내용은 로그인한 회원에게만 보입니다.',
-        actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="' + esc(H.links.naverPlace) + '" target="_blank" rel="noopener">네이버 플레이스 열기<span class="ad-sr"> (새 창)</span></a><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="rv-new">' + icon('plus') + '리뷰 옮겨 적기</button>' }) +
-        '<div class="ad-grid ad-grid--4" style="margin-bottom:16px">' + stat('옮겨 적은 리뷰', list.length + '개') + stat('회원에게 공개', mem + '개') + stat('숨김', (list.length - mem) + '개') + stat('공개 범위', '로그인 회원') + '</div>' +
-        '<div class="ad-grid ad-grid--2"><div class="ad-reviews">' + (list.length ? list.map(function (r) {
-          return '<article class="ad-review' + (r.status === 'hidden' ? ' is-hidden' : '') + '"><p class="ad-review__meta"><span class="t-strong" style="color:var(--ink)">' + esc(r.author) + '</span><span class="tnum">' + esc(AA.fmt.dot(r.date)) + '</span><span>' + esc(r.subject) + '</span><span>네이버 플레이스</span>' +
-            (r.status === 'members' ? '<span class="ad-badge ad-badge--contacted">' + icon('lock') + '회원 공개</span>' : '<span class="ad-badge ad-badge--spam">숨김</span>') + (r.example ? '<span class="ad-badge ad-badge--example">예시</span>' : '') + '</p>' +
-            '<p class="ad-review__text">' + AA.rules.highlight(r.text) + '</p>' +
-            ((r.keywords || []).length ? '<p class="ad-review__kw">' + r.keywords.map(function (k) { return '<span class="ad-badge ad-badge--plain">' + esc(k) + '</span>'; }).join('') + '</p>' : '') +
-            (AA.rules.count(r.text) ? '<div style="margin-top:8px">' + AA.rules.report(r.text) + '</div>' : '') +
-            '<p class="ad-review__btns"><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="rv-toggle" data-id="' + esc(r.id) + '">' + (r.status === 'members' ? '숨기기' : '회원에게 공개') + '</button><button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="rv-edit" data-id="' + esc(r.id) + '">' + icon('edit') + '고치기</button>' + (r.added ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="rv-del" data-id="' + esc(r.id) + '">' + icon('trash') + '지우기</button>' : '') + '</p></article>';
-        }).join('') : AA.emptyHtml('옮겨 적은 리뷰가 없습니다')) + '</div>' +
-        '<aside class="ad-stack"><section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">사이트에서 보이는 모습</h2><p class="ad-pv-label">로그인한 회원</p>' +
-        (list[0] ? '<div class="ad-review"><p class="ad-review__meta"><span>' + esc(list[0].author) + '</span><span>' + esc(AA.fmt.dot(list[0].date)) + '</span></p><p class="ad-review__text">' + esc(list[0].text) + '</p></div>' : '') +
-        '<p class="ad-pv-label">로그인하지 않은 방문자</p><div class="ad-gate"><p class="ad-gate__blur" aria-hidden="true">' + esc(list[0] ? list[0].text : '리뷰 내용') + '</p><p class="ad-gate__msg">' + icon('lock') + ' 로그인하면 리뷰 내용을 볼 수 있습니다</p></div></section>' +
-        '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:8px">옮겨 적을 때 지킬 것</h2><ul class="ad-aeo">' +
-        ['작성자 이름은 가립니다(예: 김**)', '원문 날짜와 출처(네이버 플레이스)를 함께 적습니다', '치료 결과를 장담하는 표현이 있으면 싣지 않습니다', '사진은 옮기지 않습니다(치료 전후 사진 금지)'].map(function (t) { return '<li class="is-ok">' + icon('check') + '<span>' + esc(t) + '</span></li>'; }).join('') + '</ul></section></aside></div>';
-    },
-    on: {
-      'rv-new': function () { openReview(null); },
-      'rv-edit': function (el) { openReview(reviewList().filter(function (r) { return r.id === el.getAttribute('data-id'); })[0]); },
-      'rv-toggle': function (el) { var id = el.getAttribute('data-id'); var r = reviewList().filter(function (x) { return x.id === id; })[0]; if (!r) return; AA.patch(AA.KEYS.reviews, id, { status: r.status === 'members' ? 'hidden' : 'members' }); AA.rerender(); },
-      'rv-del': function (el) {
-        var id = el.getAttribute('data-id');
-        AA.confirm({ title: '이 리뷰를 지울까요?', msg: '옮겨 적은 내용만 지워지고 네이버 플레이스 원문은 그대로입니다.', ok: '지우기', danger: true }).then(function (y) {
-          if (!y) return; var ov = AA.store.get(AA.KEYS.reviews, {}) || {}; ov._added = (ov._added || []).filter(function (r) { return r.id !== id; }); AA.store.set(AA.KEYS.reviews, ov); AA.rerender();
-        });
-      },
-      'rv-kw': function (el) { el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); },
-      'rv-live': function (el) { var r = d.getElementById('rv-rules'); if (r) r.innerHTML = AA.rules.report(el.value); },
-      'rv-save': function (el) {
-        var id = el.getAttribute('data-id');
-        var g = function (k) { var x = d.getElementById(k); return x ? x.value.trim() : ''; };
-        var text = g('rv-text');
-        if (AA.textLen(text) < 5) { AA.toast('리뷰 내용을 옮겨 적어 주세요'); return; }
-        var author = g('rv-author').replace(/^(\S)\S*/, function (m0, c) { return c + '**'; }) || '네이버 사용자';
-        var rec = { date: g('rv-date') || AA.kst().ymd, author: author, subject: g('rv-subject'), text: text, keywords: Array.prototype.filter.call(d.querySelectorAll('[data-act="rv-kw"][aria-pressed="true"]'), function () { return true; }).map(function (b) { return b.textContent; }), status: (d.getElementById('rv-show') || {}).checked ? 'members' : 'hidden' };
-        var ov = AA.store.get(AA.KEYS.reviews, {}) || {};
-        if (id) { ov[id] = Object.assign({}, ov[id] || {}, rec); if (ov._added) ov._added = ov._added.map(function (r) { return r.id === id ? Object.assign({}, r, rec) : r; }); }
-        else ov._added = [Object.assign({ id: 'RV-' + Date.now().toString(36), source: AA.seed.hospital.links.naverPlace }, rec)].concat(ov._added || []);
-        AA.store.set(AA.KEYS.reviews, ov);
-        AA.drawer.close(true); AA.toast('리뷰를 저장했습니다'); AA.rerender();
-      },
+      var risks = [
+        ['치료경험담 광고로 볼 소지', '환자가 쓴 후기를 병원 홈페이지에 싣는 것은 치료경험담 광고(의료법 제56조 제2항 제2호)로 볼 소지가 있습니다. 어디까지 허용되는지는 법률·의료광고 심의 검토로 정합니다.'],
+        ['로그인 공개도 같은 문제', '회원 가입이 누구에게나 열려 있으면 로그인한 회원에게만 보여도 불특정 다수에게 보이는 게시로 볼 소지가 큽니다. 새 사이트에는 회원 기능도 없습니다.'],
+        ['진료 분야별 모음', '임플란트·치아교정처럼 진료 분야별로 골라 모으면 치료 경험을 광고에 쓰는 것으로 읽힐 수 있습니다.'],
+        ['글을 쓴 사람의 권리', '리뷰 글의 저작권은 쓴 사람에게 있고, 옮겨 싣는 일은 네이버 플레이스 이용약관도 따라야 합니다.'],
+      ];
+      var rules = [
+        ['검토를 먼저 받습니다', '법률·의료광고 심의 검토를 마치기 전에는 사이트에 리뷰를 싣지 않습니다.'],
+        ['허락받은 글만 씁니다', '글을 쓴 사람과 플랫폼의 허락을 받은 글만 쓰고, 허락받은 날짜와 방법을 기록해 둡니다.'],
+        ['진료 분야 꼬리표를 붙이지 않습니다', '치료 결과를 말하는 글과 사진은 쓰지 않습니다.'],
+        ['로그인 확인은 서버에서 합니다', '공개 범위를 제한한다면 서버가 로그인을 확인한 뒤에만 글을 보냅니다. 로그인 전 화면의 HTML 에는 글을 넣지 않습니다(흐리게 가리기만 하면 검색·AI 로봇이 그대로 읽습니다).'],
+      ];
+      var li = function (x) { return '<li><span class="ad-idea__t">' + esc(x[0]) + '</span><span class="ad-idea__d">' + esc(x[1]) + '</span></li>'; };
+      return AA.head({ no: AA.no('reviews'), eyebrow: '콘텐츠 · 검토 전 아이디어', title: '리뷰 활용',
+        lead: '네이버 플레이스 리뷰를 홈페이지에서 활용하는 방법은 법률·의료광고 심의 검토 전 아이디어입니다. 검토를 마치기 전에는 사이트에 리뷰를 싣지 않으며, 이 데모에도 리뷰 글을 넣지 않았습니다.',
+        actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="' + esc(H.links.naverPlace) + '" target="_blank" rel="noopener">네이버 플레이스 열기<span class="ad-sr"> (새 창)</span></a>' }) +
+        '<div class="ad-grid ad-grid--even">' +
+        '<section class="ad-card" aria-labelledby="rv-risk-t"><h2 class="ad-card__title" id="rv-risk-t" style="margin-bottom:10px">먼저 검토할 점</h2><ol class="ad-idea">' + risks.map(li).join('') + '</ol></section>' +
+        '<section class="ad-card" aria-labelledby="rv-rule-t"><h2 class="ad-card__title" id="rv-rule-t" style="margin-bottom:10px">싣기로 정한다면 지킬 설계</h2><ol class="ad-idea">' + rules.map(li).join('') + '</ol></section>' +
+        '</div>' +
+        '<section class="ad-card ad-sec" aria-labelledby="rv-now-t"><h2 class="ad-card__title" id="rv-now-t" style="margin-bottom:10px">지금 사이트에서는</h2><ul class="ad-aeo">' +
+        '<li class="is-ok">' + icon('check') + '<span>리뷰 글 대신 진단 방법·진료 순서·담당 의료진처럼 병원이 확인한 사실로 진료를 설명합니다.</span></li>' +
+        '<li class="is-ok">' + icon('check') + '<span>리뷰 글은 싣지 않고, 푸터·진료시간 페이지의 ‘네이버 지도’ 링크로 네이버 플레이스에 연결만 합니다.</span></li>' +
+        '<li class="is-ok">' + icon('check') + '<span>상호·전화·주소·진료시간 글자는 <a class="ad-ext" href="#/hospital">병원 정보</a>에서 네이버 플레이스와 맞춥니다.</span></li>' +
+        '</ul></section>';
     },
   };
-  function openReview(r) {
-    r = r || {};
-    var subjects = ['임플란트', '치아교정', '예방관리', '구강내과', '구강외과', '일반진료', '심미치료'];
-    AA.drawer.open({
-      eyebrow: '리뷰 · 네이버 플레이스', title: r.id ? '리뷰 고치기' : '리뷰 옮겨 적기', focus: '#rv-text',
-      html: '<div class="ad-form"><div class="ad-form-row ad-form-row--3"><label class="ad-field"><span class="ad-field__label">원문 날짜</span><input class="ad-input" id="rv-date" type="date" value="' + esc(r.date || AA.kst().ymd) + '"></label>' +
-        '<label class="ad-field"><span class="ad-field__label">작성자 <small>자동으로 가림</small></span><input class="ad-input" id="rv-author" value="' + esc(r.author || '') + '" placeholder="예: 김민지 → 김**"></label>' +
-        '<label class="ad-field"><span class="ad-field__label">방문 진료</span><select class="ad-select" id="rv-subject">' + subjects.map(function (s) { return '<option' + (s === r.subject ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></label></div>' +
-        '<label class="ad-field"><span class="ad-field__label">리뷰 내용 <small>원문 그대로</small></span><textarea class="ad-textarea" id="rv-text" rows="6" data-input="rv-live">' + esc(r.text || '') + '</textarea></label>' +
-        '<div id="rv-rules">' + AA.rules.report(r.text || '', '의료광고 금칙어 없음') + '</div>' +
-        '<div class="ad-field"><span class="ad-field__label">키워드 리뷰 <small>네이버 플레이스에서 고른 것</small></span><div class="ad-chips">' + KW.map(function (k) { return '<button type="button" class="ad-chip" data-act="rv-kw" aria-pressed="' + ((r.keywords || []).indexOf(k) > -1) + '">' + esc(k) + '</button>'; }).join('') + '</div></div>' +
-        AA.switchHtml({ id: 'rv-show', label: '로그인한 회원에게 공개', checked: r.status !== 'hidden' }) + '</div>',
-      foot: '<span class="ad-savebar__msg">이 브라우저에만 저장됩니다</span><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="drawer-close">취소</button><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="rv-save" data-id="' + esc(r.id || '') + '">저장</button>',
-    });
-  }
 })();

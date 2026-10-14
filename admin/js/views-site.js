@@ -136,7 +136,7 @@
           '<button class="ad-ibtn" type="button" data-act="hr-sp-del" data-i="' + i + '" aria-label="' + esc(s.date + ' 일정 지우기') + '">' + icon('trash') + '</button></li>';
       };
       return AA.head({ no: AA.no('hours'), eyebrow: '사이트 설정', title: '진료시간·휴진',
-        lead: '요일별 진료시간과 휴진·특별 진료일을 정합니다. 저장하면 이 브라우저의 데모 사이트에서 헤더의 ‘지금 진료 중’, 띠배너, 진료시간 그래프, 푸터 진료시간이 바로 바뀝니다.',
+        lead: '요일별 진료시간과 휴진·특별 진료일을 정합니다. 저장하면 이 브라우저의 데모 사이트에서 헤더의 ‘지금 진료 중’, 띠배너, 진료시간 그래프와 요일별 표, 점심시간, 푸터 진료시간이 바로 바뀝니다. 본문 문장(첫 문단 등)은 데모에서 바뀌지 않아, 바뀐 페이지에는 그렇다는 안내가 함께 보입니다.',
         actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="../visit/" target="_blank" rel="noopener">사이트에서 확인<span class="ad-sr"> (새 창)</span></a>' }) +
         (stored ? '<p class="ad-note ad-note--ok" style="margin-bottom:14px"><span>' + icon('check') + '</span><span>관리자에서 정한 진료시간을 사이트에 쓰고 있습니다(' + esc(AA.fmt.dt(stored.updatedAt || new Date().toISOString())) + ' 저장 · 이 브라우저).</span></p>' : '') +
         '<section class="ad-card" id="hr-pv" style="margin-bottom:16px">' + hoursPreview(H) + '</section>' +
@@ -323,7 +323,7 @@
           var first = s.id === 'hero';
           return '<li class="' + (s.show ? '' : 'is-hidden') + '"><span class="ad-order__no">' + String(i + 1).padStart(2, '0') + '</span><span class="ad-order__name">' + esc(label[s.id] || s.id) + '<code>' + esc(s.id) + '</code></span>' +
             '<span class="ad-order__reach">' + (reach[s.id] != null ? '<span class="ad-meter"><span class="ad-meter__bar"><span class="ad-meter__fill" style="width:' + reach[s.id] + '%"></span></span><span class="tnum">' + reach[s.id] + '%</span></span>' : '') + '</span>' +
-            (first ? '<span class="muted" style="font-size:13.5px">늘 맨 위</span><span></span>' : AA.switchHtml({ label: s.show ? '보임' : '숨김', checked: s.show, change: 'mn-show', data: ' data-i="' + i + '" aria-label="' + esc((label[s.id] || s.id) + ' 보이기') + '"' }) +
+            (first ? '<span class="muted" style="font-size:var(--fs-xs)">늘 맨 위</span><span></span>' : AA.switchHtml({ label: s.show ? '보임' : '숨김', checked: s.show, change: 'mn-show', data: ' data-i="' + i + '" aria-label="' + esc((label[s.id] || s.id) + ' 보이기') + '"' }) +
               '<span class="ad-mini-btns"><button class="ad-ibtn" type="button" data-act="mn-move" data-i="' + i + '" data-dir="-1"' + (i > 1 ? '' : ' disabled') + ' aria-label="' + esc(label[s.id]) + ' 위로">' + icon('up') + '</button><button class="ad-ibtn" type="button" data-act="mn-move" data-i="' + i + '" data-dir="1"' + (i < m.sections.length - 1 ? '' : ' disabled') + ' aria-label="' + esc(label[s.id]) + ' 아래로">' + icon('down') + '</button></span>') + '</li>';
         }).join('') + '</ol><p class="ad-field__hint" style="margin-top:10px">구간 이름표(code)는 그로스메이트 구간 분석에 그대로 쓰입니다. 숨긴 구간은 도달 통계에서도 빠집니다.</p></section>' +
         '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">알림 팝업 <span class="muted" style="font-family:var(--sans);font-size:14px;font-weight:500">선택</span></h2><div class="ad-form">' +
@@ -426,7 +426,7 @@
         '<p class="ad-pv-label">주차장 ' + (H.parking || []).length + '곳</p><ul class="ad-special">' + (H.parking || []).map(function (p) { return '<li><span class="ad-special__d">' + esc(p.code) + '</span><span><b>' + esc(p.name) + '</b><br><span class="t-cell-sm">' + esc(p.address) + '</span></span><span></span></li>'; }).join('') + '</ul>' +
         '<p class="ad-field__hint" style="margin-top:8px">주차 요금·무료 시간은 병원 확인 전이라 사이트에 쓰지 않았습니다.</p></fieldset></section>' +
         '<section class="ad-card"><fieldset class="ad-fieldset"><legend>바깥 링크</legend><div class="ad-form-row">' + field('naverBooking', '네이버 예약 주소', true) + field('naverPlace', '네이버 플레이스 주소', true) + field('kakaoChannel', '카카오톡 채널') + field('blog', '네이버 블로그') + field('youtube', '유튜브', true) + '</div></fieldset></section></div>' +
-        '<aside class="ad-stack"><section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:6px">AI가 읽는 병원 정보</h2><p class="ad-field__hint" style="margin-bottom:10px">홈·병원소개·진료시간 페이지에 들어가는 구조화 데이터(Dentist·MedicalClinic)의 핵심 칸입니다.</p><pre class="ad-ld" id="hp-ld">' + esc(JSON.stringify(ld, null, 2)) + '</pre></section>' +
+        '<aside class="ad-stack"><section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:6px">AI가 읽는 병원 정보</h2><p class="ad-field__hint" style="margin-bottom:10px">홈·병원소개·진료시간 페이지에 들어가는 구조화 데이터(Dentist·MedicalClinic)의 핵심 칸입니다.</p><pre class="ad-ld" id="hp-ld" tabindex="0" role="region" aria-label="구조화 데이터 미리보기(JSON-LD)">' + esc(JSON.stringify(ld, null, 2)) + '</pre></section>' +
         '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:8px">숫자 표기(병원 안내 기준)</h2><dl class="ad-dl">' +
         [['진료과', H.numbers.departments + '개'], ['치과의사', H.numbers.dentists + '명'], ['보건복지부 인증 전문의', H.numbers.specialists + '명'], ['스태프', H.numbers.staff], ['전용면적', H.numbers.area], ['진료 의자', H.numbers.chairs + '대']].map(function (x) { return '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd></div>'; }).join('') +
         '</dl><p class="ad-field__hint" style="margin-top:8px">숫자는 기준(' + esc((AA.seed.site || {}).basisLabel || '') + ')과 함께 씁니다. 스태프 수는 병원 확인 중입니다.</p></section></aside></div>' +

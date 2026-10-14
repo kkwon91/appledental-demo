@@ -202,6 +202,8 @@
       var rows = AA.conv.rows(30);
       var secs = C.sections || [];
       var drops = secs.map(function (s, i) { return { s: s, drop: i ? secs[i - 1].all - s.all : 0, from: i ? secs[i - 1] : null }; });
+      // 첫 화면 → 다음 구간(drops[1])은 첫 화면만 보고 나가는 방문이라 따로 본다. 파란 막대 = 그 다음 구간부터 가장 크게 줄어드는 곳
+      var first = drops[1] || null;
       var big = drops.slice(2).sort(function (a, b) { return b.drop - a.drop; })[0];
       var reach = secs.map(function (s) { return { label: s.label + ' · ' + s.id, value: s.all, hot: big && s.id === big.s.id, valueText: s.all + '%', tip: [s.label + ' (data-fb-section="' + s.id + '")', '전체 ' + s.all + '%', 'PC ' + s.pc + '% · 모바일 ' + s.mo + '%'] }; });
       var tries = t.calls + t.naver + t.kakao + t.consultOpen;
@@ -213,7 +215,7 @@
       var aiLeads = AA.leads.all().filter(function (l) { return l.status !== 'spam' && AA.inLast(l.createdAt, 30) && AA.leads.from(l).ai; }).length;
       var range = AA.fmt.dot(AA.addDays(AA.REF, -29)) + ' ~ ' + AA.fmt.dot(AA.REF);
       var sugs = [];
-      if (big) sugs.push({ t: '‘' + big.from.label + '’ 다음 ‘' + big.s.label + '’에서 ' + big.drop + '%p가 빠집니다', d: '홈에서 가장 많이 내려가지 않는 구간입니다. 이 구간의 첫 문장을 짧게 하고 사진을 먼저 보여 주거나, 아래쪽의 ‘예약’ 구간을 위로 올린 뒤 도달률이 어떻게 바뀌는지 비교해 볼 수 있습니다.', links: ['/'] });
+      if (big) sugs.push({ t: '‘' + big.from.label + '’ 다음 ‘' + big.s.label + '’에서 ' + big.drop + '%p가 빠집니다', d: (first ? '첫 화면만 보고 나가는 ' + first.drop + '%p를 빼면, ' : '') + '홈에서 가장 많이 멈추는 곳입니다. 이 구간의 첫 문장을 짧게 하고 사진을 먼저 보여 주거나, 아래쪽의 ‘예약’ 구간을 위로 올린 뒤 도달률이 어떻게 바뀌는지 비교해 볼 수 있습니다.', links: ['/'] });
       sugs.push({ t: '이름을 쓰기 시작한 ' + AA.num(t.nameStart) + '명 중 ' + AA.pct(t.completes, t.nameStart) + '만 신청을 마쳤습니다', d: '연락처 칸에서 멈추는 경우가 많습니다. 연락처 자동 하이픈과 ‘연락받으실 번호’ 안내는 이미 넣었고, 다음으로 희망 연락 시간·문의 내용을 선택 칸으로 둔 채 필수 칸을 2개로 유지합니다.', links: ['/consult/'] });
       sugs.push({ t: '모바일은 상담 신청 구간까지 ' + last.mo + '%, PC는 ' + last.pc + '%가 내려옵니다', d: '모바일 방문이 ' + AA.pct(t.mobile, t.visits) + '입니다. 모바일에서는 화면 아래 고정 바(네이버 예약·자가진단·상담 신청·전화)가 실제 신청 경로가 됩니다.', links: ['/'] });
       if (aiLeads) sugs.push({ t: 'AI 검색(ChatGPT·Perplexity)을 거쳐 온 신청 ' + aiLeads + '건', d: 'AI 답변이 인용한 페이지에서 바로 상담으로 이어졌습니다. AI 검색 노출 화면에서 어떤 질문에 병원이 언급되는지 함께 보세요.', links: [] });
@@ -222,7 +224,7 @@
         AA.gmNote() +
         '<p class="ad-count" style="margin:12px 0">' + esc(range) + ' · 최근 30일</p>' +
         '<div class="ad-grid ad-grid--4">' + kpi('방문', AA.num(t.visits), '회', '모바일 ' + AA.pct(t.mobile, t.visits)) + kpi('상담 시도', AA.num(tries), '회', '전화·네이버 예약·카카오톡·상담 창') + kpi('상담 신청 완료', AA.num(t.completes), '건', '상담 신청 목록과 같은 수') + kpi('방문 대비 신청', AA.pct(t.completes, t.visits, 2), '', '상담 시도까지는 ' + AA.pct(tries, t.visits, 1)) + '</div>' +
-        '<div class="ad-grid ad-grid--2 ad-sec"><section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">홈 구간 도달</h2><p class="ad-card__sub">방문자 가운데 그 구간까지 내려온 비율 · 가장 크게 빠지는 구간을 파란색으로</p></div></div>' +
+        '<div class="ad-grid ad-grid--2 ad-sec"><section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">홈 구간 도달</h2><p class="ad-card__sub">방문자 가운데 그 구간까지 내려온 비율 · 파란색은 ' + (first ? '‘' + esc(first.s.label) + '’ 다음 구간부터 ' : '') + '가장 크게 줄어드는 곳' + (first ? '(첫 화면에서 바로 나가는 ' + esc(first.drop) + '%p는 따로 봅니다)' : '') + '</p></div></div>' +
         AA.chart.html({ type: 'hbars', data: reach, max: 100, rowH: 32, ariaLabel: '홈 구간별 도달 비율' }) +
         AA.chart.table('홈 구간 도달', ['구간', '이름표', '전체', 'PC', '모바일'], secs.map(function (s) { return [s.label, s.id, s.all + '%', s.pc + '%', s.mo + '%']; }), [2, 3, 4]) + '</section>' +
         '<div class="ad-stack"><section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">상담 신청 퍼널</h2><p class="ad-card__sub">방문 → 상담 창 열기 → 이름 쓰기 시작 → 신청 완료</p></div></div>' + AA.conv.funnelHtml(t) + '</section>' +
@@ -254,7 +256,7 @@
       trend: m.map(function (dt, i) { return { date: dt, n: (A.totals || [])[i] || 0 }; }) };
   };
   AA.aeoMatrixMini = function (a) {
-    return '<div class="ad-table-wrap"><table class="ad-matrix" style="font-size:13.5px"><thead><tr><th scope="col"><span class="ad-sr">질문</span></th>' + a.engines.map(function (e) { return '<th scope="col">' + esc(SHORT[e] || e) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    return '<div class="ad-table-wrap"><table class="ad-matrix" style="font-size:var(--fs-xs)"><thead><tr><th scope="col"><span class="ad-sr">질문</span></th>' + a.engines.map(function (e) { return '<th scope="col">' + esc(SHORT[e] || e) + '</th>'; }).join('') + '</tr></thead><tbody>' +
       a.queries.map(function (q) {
         return '<tr><th scope="row">' + esc(q.q.replace(/^부천역?\s*/, '')) + '</th>' + q.latest.map(function (c, i) {
           return '<td data-label="' + esc(a.engines[i]) + '"' + (c.mentioned ? ' class="is-on"' : '') + '>' + (c.mentioned ? '<span class="ad-cell__mark" title="' + esc(c.rank + '번째로 언급') + '">' + esc(c.rank) + '</span>' : '<span class="ad-cell__no">—</span>') + '</td>';

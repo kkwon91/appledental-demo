@@ -5,7 +5,8 @@
    3) 화면은 처음엔 잠가 둔다(마우스 휠·손가락 스크롤을 화면이 빼앗지 않게). 누르면 직접 둘러보기,
       마우스가 화면 밖으로 나가거나 화면이 시야에서 사라지면 다시 잠근다.
    4) 자동 스크롤 켜기/끄기 — 사람이 화면을 만지면 멈추고, 화면이 시야 밖이면 쉰다.
-   5) ../assets/data/compare.json → 비교표 + 그로스메이트 AEO 점검 칸(null 이면 '측정 예정').
+   5) ../assets/data/compare.json → 비교표 + 그로스메이트 AEO 점검 칸. 점검 칸은 HTML 에서 숨겨 두고(hidden),
+      두 값 가운데 하나라도 재었을 때만 보인다(둘 다 null·자료를 못 읽음·스크립트 꺼짐 = 칸 없음, 한쪽만 null 이면 그쪽 '측정 예정').
    6) 새 사이트 페이지 수 = ../sitemap.xml 의 주소 수.
    그로스메이트: 데모 화면은 ?gm=off 로 불러 운영 광고주(34)에 시험 신호(특히 자동 스크롤)가 섞이지 않게 한다.
    ?gm=off 는 이 브라우저에 '끔' 표시를 남기므로, 목업을 열기 전에 꺼져 있지 않았다면 목업을 떠날 때 원래대로 돌린다. */
@@ -315,6 +316,8 @@
     if (!auditBox) return;
     var A = data.audit && typeof data.audit === 'object' ? data.audit : {};
     var info = { before: auditInfo(A.before), after: auditInfo(A.after) };
+    // 아직 아무것도 재지 않았으면 빈칸('측정 예정' 두 칸)을 보이지 않는다 — 칸째 숨긴 채 둔다
+    if (!info.before && !info.after) { auditBox.hidden = true; return; }
     ['before', 'after'].forEach(function (k) {
       var col = auditBox.querySelector('[data-audit-col="' + k + '"]');
       if (!col) return;
@@ -362,18 +365,18 @@
       if (o.date) more.appendChild(el('p', 'mk-audit__date', '측정일 ' + fmtDate(o.date)));
     });
     var basis = auditBox.querySelector('[data-audit-basis]');
-    if (!basis) return;
-    var b = info.before;
-    var a = info.after;
-    var when = txt(data.generatedAt) ? '(기준: ' + fmtDate(data.generatedAt) + ')' : '';
-    if (b && a && b.score != null && a.score != null && (b.max == null || a.max == null || b.max === a.max)) {
-      var diff = Math.round((a.score - b.score) * 10) / 10;
-      basis.textContent = (diff === 0 ? '두 사이트의 점수가 같습니다' : '새 사이트가 원본보다 ' + Math.abs(diff) + '점 ' + (diff > 0 ? '높습니다' : '낮습니다')) + when + '.';
-    } else if (b || a) {
-      basis.textContent = '한쪽만 측정했습니다. 나머지는 측정한 뒤 채웁니다' + when + '.';
-    } else {
-      basis.textContent = '아직 측정 전입니다. 실서비스 전환 전후로 재서 채웁니다.';
+    if (basis) {
+      var b = info.before;
+      var a = info.after;
+      var when = txt(data.generatedAt) ? '(기준: ' + fmtDate(data.generatedAt) + ')' : '';
+      if (b && a && b.score != null && a.score != null && (b.max == null || a.max == null || b.max === a.max)) {
+        var diff = Math.round((a.score - b.score) * 10) / 10;
+        basis.textContent = (diff === 0 ? '두 사이트의 점수가 같습니다' : '새 사이트가 원본보다 ' + Math.abs(diff) + '점 ' + (diff > 0 ? '높습니다' : '낮습니다')) + when + '.';
+      } else {
+        basis.textContent = '한쪽만 측정했습니다. 나머지는 측정한 뒤 채웁니다' + when + '.';
+      }
     }
+    auditBox.hidden = false; // 다 그린 뒤에 보인다(도중에 멈추면 숨긴 채)
   }
 
   if ((cmpBox || auditBox) && window.fetch) {
@@ -382,7 +385,7 @@
       .then(function (data) {
         data = data && typeof data === 'object' ? data : {};
         try { renderCompare(data); } catch (e) { if (cmpBox) { cmpBox.textContent = ''; cmpBox.appendChild(el('p', 'mk-loading', '비교표를 그리지 못했습니다.')); } }
-        try { renderAudit(data); } catch (e) { /* 자리표시 그대로 */ }
+        try { renderAudit(data); } catch (e) { if (auditBox) auditBox.hidden = true; }
       })
       .catch(function () {
         if (!cmpBox) return;
