@@ -152,7 +152,7 @@
         AA.chart.table('불편한 곳별 결과', ['불편한 곳', '정상 범위', '경미', '주의', '진료 권장', '합계'], areas.map(function (a) { return [a.label].concat(a.parts.map(function (v) { return v + '회'; })).concat([AA.sum(a.parts) + '회']); }), [1, 2, 3, 4, 5]) + '</section>' +
         '<div class="ad-grid ad-grid--even ad-sec"><section class="ad-card"><div class="ad-card__head"><h2 class="ad-card__title">연령대</h2></div>' +
         AA.chart.html({ type: 'hbars', data: ages, unit: '회', ariaLabel: '연령대별 자가진단 완료' }) + AA.chart.table('연령대', ['연령대', '완료'], ages.map(function (x) { return [x.label, x.value + '회']; }), [1]) + '</section>' +
-        '<section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">‘기다리지 마세요’ 증상</h2><p class="ad-card__sub">고른 사람에게는 점수와 상관없이 바로 연락하라는 안내가 먼저 보입니다</p></div></div>' +
+        '<section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">‘기다리지 마세요’ 증상</h2><p class="ad-card__sub">고른 사람에게는 점수와 상관없이 증상에 맞는 연락 안내(119·오늘 연락·미루지 말고 진찰)가 먼저 보입니다</p></div></div>' +
         AA.chart.html({ type: 'hbars', data: reds, unit: '회', ariaLabel: '기다리지 마세요 증상 선택 횟수' }) + AA.chart.table('기다리지 마세요 증상', ['증상', '선택'], reds.map(function (x) { return [x.label, x.value + '회']; }), [1]) + '</section></div>' +
         (br.events.length ? '<section class="ad-card ad-sec"><div class="ad-card__head"><h2 class="ad-card__title">이 브라우저 기록</h2><span class="muted">최근 ' + Math.min(10, br.events.length) + '건</span></div><div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>시각</th><th>단계</th><th>불편한 곳</th><th>연령대</th><th>결과</th></tr></thead><tbody>' +
           br.events.slice(-10).reverse().map(function (e) {

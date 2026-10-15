@@ -1,12 +1,12 @@
 {
- "at": "2026-10-14T20:20:13.861Z",
+ "at": "2026-10-15T06:00:53.377Z",
  "newBase": "http://127.0.0.1:8940/appledental-demo/",
  "report": [
   {
    "side": "new",
    "view": "pc",
    "id": "home-full",
-   "height": 19214
+   "height": 19323
   },
   {
    "side": "new",
@@ -42,7 +42,7 @@
    "side": "new",
    "view": "mo",
    "id": "home-full",
-   "height": 23995
+   "height": 24121
   },
   {
    "side": "new",

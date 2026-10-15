@@ -43,6 +43,20 @@
       memo: String(l.memo || ''),
     };
   }
+  /** 글 t 에서 가장 먼저 나오는 항목(list 가운데 name(x) 가 글에 든 것) — 같은 자리에서 시작하면 더 긴 이름
+      (앞부분이 같은 이름끼리 짧은 쪽이 이기지 않게), 그래도 같으면 목록 순서. 없으면 null */
+  function firstIn(t, list, name) {
+    var best = null;
+    var at = -1;
+    var len = 0;
+    (list || []).forEach(function (x) {
+      var nm = String((x && name(x)) || '');
+      var i = nm ? t.indexOf(nm) : -1;
+      if (i < 0) return;
+      if (!best || i < at || (i === at && nm.length > len)) { best = x; at = i; len = nm.length; }
+    });
+    return best;
+  }
   AA.leads = {
     STATUS: STATUS,
     site: function () { var arr = AA.store.get('apple_demo_leads', []); return Array.isArray(arr) ? arr.filter(function (x) { return x && typeof x === 'object'; }) : []; },
@@ -86,16 +100,20 @@
         return { label: u.hostname, ai: false };
       } catch (e) { return { label: r.slice(0, 40), ai: false }; }
     },
-    /** 자가진단 결과 글 → { area, level, levelLabel, age } */
+    /** 자가진단 결과 글 → { area, areaId, level, levelLabel, age, text }.
+        이름은 글에서 '가장 먼저 나오는 것'을 고른다(firstIn) — 앱이 넘기는 summary 는 '영역 · 연령대 · 결과 단계(제목) · 증상 · 해당 답'
+        순서라, 뒤쪽 질문·증상 글에 다른 영역·연령대·단계 이름이 들어 있어도 앞 칸의 이름이 이긴다.
+        영역은 이름(label)으로 먼저 찾고, 이름이 없을 때만 id 로 찾는다. 단계는 '결과 ' 바로 뒤 이름을 먼저 찾고, 없으면
+        (예시 데이터처럼 '영역 · 단계 · 연령대' 모양의 글) 가장 먼저 나오는 단계 이름 */
     sc: function (text) {
       var t = String(text || '');
       if (!t) return null;
       var S = AA.seed.selfcheck || {};
-      var lv = null;
-      [['urgent', '진료 권장'], ['caution', '주의'], ['mild', '경미'], ['normal', '정상 범위']].some(function (x) { if (t.indexOf(x[1]) > -1) { lv = x; return true; } return false; });
-      var area = (S.areas || []).filter(function (a) { return t.indexOf(a.label) > -1 || t.indexOf(a.id) > -1; })[0];
-      var age = (S.ages || []).filter(function (a) { return t.indexOf(a.label) > -1; })[0];
-      return { area: area ? area.label : '', areaId: area ? area.id : '', level: lv ? lv[0] : '', levelLabel: lv ? lv[1] : '', age: age ? age.label : '', text: t };
+      var LVS = [{ id: 'urgent', label: '진료 권장' }, { id: 'caution', label: '주의' }, { id: 'mild', label: '경미' }, { id: 'normal', label: '정상 범위' }];
+      var lv = firstIn(t, LVS, function (x) { return '결과 ' + x.label; }) || firstIn(t, LVS, function (x) { return x.label; });
+      var area = firstIn(t, S.areas, function (a) { return a.label; }) || firstIn(t, S.areas, function (a) { return a.id; });
+      var age = firstIn(t, S.ages, function (a) { return a.label; });
+      return { area: area ? area.label : '', areaId: area ? area.id : '', level: lv ? lv.id : '', levelLabel: lv ? lv.label : '', age: age ? age.label : '', text: t };
     },
   };
   AA.badges.leads = function () { return AA.leads.all().filter(function (l) { return l.status === 'new'; }).length; };
