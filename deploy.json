@@ -1,7 +1,7 @@
 {
- "build": "1df8ba9b8cb7",
- "source": "45e6b7a",
+ "build": "e950fadb0444",
+ "source": "c5a5a29",
  "sourceDirty": true,
- "deployedAt": "2026-11-12T08:37:39.473Z",
+ "deployedAt": "2026-11-12T09:03:59.982Z",
  "note": "데모 배포 표시(tools/deploy.mjs) — node tools/deploy.mjs --status 가 docs/ 와 견준다"
 }
