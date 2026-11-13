@@ -1719,7 +1719,7 @@ A. 네. 사과나무치과병원 엑스레이 자료는 CD로 받으시면 10,00
 - 담당 진료: [충치·보철 치료](https://kkwon91.github.io/appledental-demo/general/cavity-prosthetics/), [틀니 치료](https://kkwon91.github.io/appledental-demo/general/dentures/), [신경 치료](https://kkwon91.github.io/appledental-demo/general/root-canal/), [통합 진료](https://kkwon91.github.io/appledental-demo/general/)
 - 소개: https://kkwon91.github.io/appledental-demo/doctors/choi-sunyoung/
 
-### 권소연 — 통합보철과 과장 · 통합진료과
+### 권소연 — 통합진료과 과장
 
 - 전문의: 보건복지부 인증 통합치의학과 전문의
 - 주요 진료(병원이 정리한 진료과장별 진료 과목, 2026년 11월 기준): 심미보철, 라미네이트, 심미 레진치료, 지르코니아·세라믹 보철, 임플란트 보철, 치아미백, 충치·신경치료

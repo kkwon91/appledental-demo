@@ -123,7 +123,7 @@
 - [최원재](https://kkwon91.github.io/appledental-demo/doctors/choi-wonjae/) — 구강악안면외과 과장 · 보건복지부 인증 구강악안면외과 전문의
 - [김영건](https://kkwon91.github.io/appledental-demo/doctors/kim-younggun/) — 구강내과 과장 · 보건복지부 인증 구강내과 전문의 · 주요 진료: 턱관절질환, 구내염·구강점막질환, 구강건조증, 두통·안면통증, 수면무호흡 구강장치 치료, 구취검사 및 구강세균검사
 - [최선영](https://kkwon91.github.io/appledental-demo/doctors/choi-sunyoung/) — 보철과 과장 · 보건복지부 인증 치과보철과 전문의 · 주요 진료: 심미보철, 라미네이트, 임플란트 보철, 부분틀니, 심미 완전틀니, 임플란트를 이용한 부분틀니
-- [권소연](https://kkwon91.github.io/appledental-demo/doctors/kwon-soyeon/) — 통합보철과 과장 · 통합진료과 · 보건복지부 인증 통합치의학과 전문의 · 주요 진료: 심미보철, 라미네이트, 심미 레진치료, 지르코니아·세라믹 보철, 임플란트 보철, 치아미백, 충치·신경치료
+- [권소연](https://kkwon91.github.io/appledental-demo/doctors/kwon-soyeon/) — 통합진료과 과장 · 보건복지부 인증 통합치의학과 전문의 · 주요 진료: 심미보철, 라미네이트, 심미 레진치료, 지르코니아·세라믹 보철, 임플란트 보철, 치아미백, 충치·신경치료
 - [김유영](https://kkwon91.github.io/appledental-demo/doctors/kim-yuyoung/) — 치주과 과장
 
 ## 전체 본문
