@@ -36,13 +36,6 @@
     <image:image><image:loc>https://kkwon91.github.io/appledental-demo/assets/img/photo/a4_1.webp</image:loc></image:image>
   </url>
   <url>
-    <loc>https://kkwon91.github.io/appledental-demo/pricing/</loc>
-    <lastmod>2026-10-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image><image:loc>https://kkwon91.github.io/appledental-demo/assets/img/photo/a4_2.webp</image:loc></image:image>
-  </url>
-  <url>
     <loc>https://kkwon91.github.io/appledental-demo/warranty/</loc>
     <lastmod>2026-10-14</lastmod>
     <changefreq>monthly</changefreq>
@@ -167,6 +160,13 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
     <image:image><image:loc>https://kkwon91.github.io/appledental-demo/assets/img/photo/a2_29.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://kkwon91.github.io/appledental-demo/pricing/</loc>
+    <lastmod>2026-10-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image><image:loc>https://kkwon91.github.io/appledental-demo/assets/img/photo/a4_2.webp</image:loc></image:image>
   </url>
   <url>
     <loc>https://kkwon91.github.io/appledental-demo/implant/</loc>
