@@ -403,7 +403,7 @@
 ### 임플란트 — 임플란트 진료
 
 - 주소: https://kkwon91.github.io/appledental-demo/implant/
-- 요약: 부천 사과나무치과병원의 임플란트 진료는 3층 임플란트진료부에서 3D CT와 구강 스캐너로 잇몸뼈와 신경 위치를 확인한 뒤, 임플란트를 심을 위치·각도·깊이를 설계해 진행합니다. 보철물은 원내 기공실에서 의료진과 기공사가 함께 만들고, 치료가 끝난 뒤에는 예방과와 연계한 정기 검진과 스케일링으로 관리합니다. 서울대학교 대학원 치의학 박사인 이희용 병원장이 직접 진료합니다. (2026년 10월 병원 안내 기준)
+- 요약: 부천 사과나무치과병원의 임플란트 진료는 3층 임플란트진료부에서 3D CT와 구강 스캐너로 잇몸뼈와 신경 위치를 확인한 뒤, 임플란트를 심을 위치·각도·깊이를 설계해 진행합니다. 보철물은 원내 기공실에서 의료진과 기공사가 함께 만들고, 치료가 끝난 뒤에는 예방과와 연계한 정기 검진과 스케일링으로 관리합니다. 서울대학교 대학원 치의학 박사인 이희용 병원장이 직접 진료하고, 임플란트 위에 올리는 보철은 보건복지부 인증 치과보철과 전문의인 장한솔 과장이 맡습니다. (2026년 10월 병원 안내 기준)
 
 **Q. 임플란트 치료 기간은 얼마나 걸리나요?**
 
@@ -1607,7 +1607,7 @@ A. 네. 사과나무치과병원 엑스레이 자료는 CD로 받으시면 10,00
 - 주요 진료(병원이 정리한 진료과장별 진료 과목, 2026년 11월 기준): 일반보철(크라운·브릿지), 자연치아 보존치료, 심미보철, 충치치료, 임플란트 수술·보철
 - 학력·수련: 연세대학교 치과대학 치의학전문대학원 졸업; 강남세브란스 치과병원 인턴 수료; 강남세브란스 치과병원 보철과 레지던트 수료
 - 학회·연수·자격: 대한치과보철학회 정회원; 대한구강악안면임플란트학회 정회원
-- 담당 진료: [충치·보철 치료](https://kkwon91.github.io/appledental-demo/general/cavity-prosthetics/), [틀니 치료](https://kkwon91.github.io/appledental-demo/general/dentures/), [신경 치료](https://kkwon91.github.io/appledental-demo/general/root-canal/), [통합 진료](https://kkwon91.github.io/appledental-demo/general/)
+- 담당 진료: [충치·보철 치료](https://kkwon91.github.io/appledental-demo/general/cavity-prosthetics/), [임플란트 진료](https://kkwon91.github.io/appledental-demo/implant/), [틀니 치료](https://kkwon91.github.io/appledental-demo/general/dentures/), [신경 치료](https://kkwon91.github.io/appledental-demo/general/root-canal/), [통합 진료](https://kkwon91.github.io/appledental-demo/general/)
 - 소개: https://kkwon91.github.io/appledental-demo/doctors/jang-hansol/
 
 ### 전진영 — 보철과 과장
