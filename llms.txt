@@ -108,22 +108,22 @@
 
 치과의사 17명 가운데 10명이 보건복지부 인증 전문의입니다(2026년 10월 병원 의료진 소개 기준). 학력·경력은 llms-full.txt 에 있습니다.
 
-- [이희용](https://kkwon91.github.io/appledental-demo/doctors/lee-heeyong/) — 병원장 · 임플란트과
-- [홍헌표](https://kkwon91.github.io/appledental-demo/doctors/hong-heonpyo/) — 부병원장 · 교정과 · 보건복지부 인증 치과교정과 전문의
-- [장한솔](https://kkwon91.github.io/appledental-demo/doctors/jang-hansol/) — 보철과 과장 · 보건복지부 인증 치과보철과 전문의
+- [이희용](https://kkwon91.github.io/appledental-demo/doctors/lee-heeyong/) — 병원장 · 임플란트과 · 주요 진료: 고난도 임플란트, 전악 임플란트, 뼈이식 및 상악동 거상술, 잇몸이식·치주수술, 보철치료
+- [홍헌표](https://kkwon91.github.io/appledental-demo/doctors/hong-heonpyo/) — 부병원장 · 교정과 · 보건복지부 인증 치과교정과 전문의 · 주요 진료: 청장년 투명교정(인비절라인, ODS), 전연령 장치교정(데이몬, 클리피), 수술교정, 소아 청소년 예방교정
+- [장한솔](https://kkwon91.github.io/appledental-demo/doctors/jang-hansol/) — 보철과 과장 · 보건복지부 인증 치과보철과 전문의 · 주요 진료: 일반보철(크라운·브릿지), 자연치아 보존치료, 심미보철, 충치치료, 임플란트 수술·보철
 - [전진영](https://kkwon91.github.io/appledental-demo/doctors/jeon-jinyoung/) — 보철과 과장
-- [정유진](https://kkwon91.github.io/appledental-demo/doctors/jung-yujin/) — 교정과 과장 · 보건복지부 인증 치과교정과 전문의
-- [장지연](https://kkwon91.github.io/appledental-demo/doctors/jang-jiyeon/) — 통합진료과 과장 · 보건복지부 인증 통합치의학과 전문의
-- [이일석](https://kkwon91.github.io/appledental-demo/doctors/lee-ilseok/) — 보존과 과장 · 보건복지부 인증 치과보존과 전문의
-- [엄승희](https://kkwon91.github.io/appledental-demo/doctors/eom-seunghee/) — 보존과 과장
-- [제연희](https://kkwon91.github.io/appledental-demo/doctors/je-yeonhee/) — 예방과 과장
-- [송연희](https://kkwon91.github.io/appledental-demo/doctors/song-yeonhee/) — 예방과 과장
-- [신명철](https://kkwon91.github.io/appledental-demo/doctors/shin-myungcheol/) — 예방과 과장
-- [안경빈](https://kkwon91.github.io/appledental-demo/doctors/ahn-kyungbin/) — 통합진료과 과장 · 보건복지부 인증 통합치의학과 전문의
+- [정유진](https://kkwon91.github.io/appledental-demo/doctors/jung-yujin/) — 교정과 과장 · 보건복지부 인증 치과교정과 전문의 · 주요 진료: 인비절라인 심미 교정, 데이몬 장치 교정, 비발치 구치부후방이동교정, 중장년·실버 부분교정, 보철협진 부분교정
+- [장지연](https://kkwon91.github.io/appledental-demo/doctors/jang-jiyeon/) — 통합진료과 과장 · 보건복지부 인증 통합치의학과 전문의 · 주요 진료: 충치치료, 신경치료, 보철치료, 치주치료, 레진치료, 라미네이트
+- [이일석](https://kkwon91.github.io/appledental-demo/doctors/lee-ilseok/) — 보존과 과장 · 보건복지부 인증 치과보존과 전문의 · 주요 진료: 신경치료, 재신경치료, 치근단절제술, 충치치료, 치아 외상치료
+- [엄승희](https://kkwon91.github.io/appledental-demo/doctors/eom-seunghee/) — 보존과 과장 · 주요 진료: 충치치료, 신경치료, 신경치료 후 크라운 치료
+- [제연희](https://kkwon91.github.io/appledental-demo/doctors/je-yeonhee/) — 예방과 과장 · 주요 진료: 예방진료, 잇몸치료, 보존치료
+- [송연희](https://kkwon91.github.io/appledental-demo/doctors/song-yeonhee/) — 예방과 과장 · 주요 진료: 예방진료, 잇몸치료, 보존치료, 심미치료
+- [신명철](https://kkwon91.github.io/appledental-demo/doctors/shin-myungcheol/) — 예방과 과장 · 주요 진료: 예방치료, 전체틀니·부분틀니, 잇몸치료, 자연치아 보존치료
+- [안경빈](https://kkwon91.github.io/appledental-demo/doctors/ahn-kyungbin/) — 통합진료과 과장 · 보건복지부 인증 통합치의학과 전문의 · 주요 진료: 임플란트 보철, 심미보철, 틀니, 충치치료, 신경치료, 잇몸치료
 - [최원재](https://kkwon91.github.io/appledental-demo/doctors/choi-wonjae/) — 구강악안면외과 과장 · 보건복지부 인증 구강악안면외과 전문의
-- [김영건](https://kkwon91.github.io/appledental-demo/doctors/kim-younggun/) — 구강내과 과장 · 보건복지부 인증 구강내과 전문의
-- [최선영](https://kkwon91.github.io/appledental-demo/doctors/choi-sunyoung/) — 보철과 과장 · 보건복지부 인증 치과보철과 전문의
-- [권소연](https://kkwon91.github.io/appledental-demo/doctors/kwon-soyeon/) — 통합보철과 과장 · 보건복지부 인증 통합치의학과 전문의
+- [김영건](https://kkwon91.github.io/appledental-demo/doctors/kim-younggun/) — 구강내과 과장 · 보건복지부 인증 구강내과 전문의 · 주요 진료: 턱관절질환, 구내염·구강점막질환, 구강건조증, 두통·안면통증, 수면무호흡 구강장치 치료, 구취검사 및 구강세균검사
+- [최선영](https://kkwon91.github.io/appledental-demo/doctors/choi-sunyoung/) — 보철과 과장 · 보건복지부 인증 치과보철과 전문의 · 주요 진료: 심미보철, 라미네이트, 임플란트 보철, 부분틀니, 심미 완전틀니, 임플란트를 이용한 부분틀니
+- [권소연](https://kkwon91.github.io/appledental-demo/doctors/kwon-soyeon/) — 통합보철과 과장 · 통합진료과 · 보건복지부 인증 통합치의학과 전문의 · 주요 진료: 심미보철, 라미네이트, 심미 레진치료, 지르코니아·세라믹 보철, 임플란트 보철, 치아미백, 충치·신경치료
 - [김유영](https://kkwon91.github.io/appledental-demo/doctors/kim-yuyoung/) — 치주과 과장
 
 ## 전체 본문
