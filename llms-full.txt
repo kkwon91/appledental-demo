@@ -444,7 +444,7 @@ A. 아래턱 어금니 부위에는 아래 치아·턱·입술 감각을 맡는 
 
 **Q. 뼈이식에는 어떤 재료를 쓰나요?**
 
-A. 환자 본인의 뼈(자가골)나 인공뼈 등 이식재를 씁니다. 어떤 재료가 맞는지는 잇몸뼈 상태를 진찰한 뒤 상의합니다.
+A. 환자 본인의 뼈(자가골)와 뼈이식재(메드파크 에스원, 사이버메드 코어오스 제노)를 씁니다. 어떤 재료가 맞는지는 잇몸뼈 상태를 진찰한 뒤 상의합니다.
 
 **Q. 임플란트가 어렵다는 말을 들었는데 상담받을 수 있나요?**
 
@@ -1499,7 +1499,7 @@ A. 네. 사과나무치과병원 비급여 진료비 표에서 미백(전문가 
 - 전문의: 보건복지부 인증 구강악안면외과 전문의
 - 학력·수련: 서울대학교 치과대학 졸업; 서울대학교 대학원 치의학 박사
 - 경력: 전) 포스치과의원 대표원장; 전) 순천향대학교 서울병원 치과, 구강악안면외과 임상교수; 전) 서울대학교 치과병원 턱교정, 안면윤곽수술센터 진료교수 및 구강악안면외과 겸임교수
-- 담당 진료: [구강악안면외과 진료](https://kkwon91.github.io/appledental-demo/oral-surgery/), [사랑니 발치](https://kkwon91.github.io/appledental-demo/oral-surgery/wisdom-tooth/), [구강내 소수술](https://kkwon91.github.io/appledental-demo/oral-surgery/minor-surgery/), [고난도 임플란트](https://kkwon91.github.io/appledental-demo/implant/advanced/)
+- 담당 진료: [구강악안면외과 진료](https://kkwon91.github.io/appledental-demo/oral-surgery/), [사랑니 발치](https://kkwon91.github.io/appledental-demo/oral-surgery/wisdom-tooth/), [구강내 소수술](https://kkwon91.github.io/appledental-demo/oral-surgery/minor-surgery/)
 - 소개: https://kkwon91.github.io/appledental-demo/doctors/choi-wonjae/
 
 ### 김영건 — 구강내과 과장
