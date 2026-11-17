@@ -6,7 +6,7 @@
   var AA = w.AA;
   var esc = AA.esc;
   var started = false;
-  var VER = 'ops-20261117'; // 시안 때 이 브라우저에 남긴 관리자 저장값(예시 신청의 상태·메모 등)을 한 번 비우는 표식
+  var VER = 'ops-20261118'; // 시안 때 이 브라우저에 남긴 관리자 저장값(예시 신청의 상태·메모 등)을 한 번 비우는 표식
   var POLL = 60000;
 
   function $(id) { return d.getElementById(id); }
@@ -14,7 +14,9 @@
   (function cleanOld() {
     try {
       if (w.localStorage.getItem('apple_admin_ver') === VER) return;
-      ['apple_admin_leads', 'apple_admin_online', 'apple_admin_columns', 'apple_admin_audit', 'apple_demo_leads'].forEach(function (k) { w.localStorage.removeItem(k); });
+      ['apple_admin_leads', 'apple_admin_online', 'apple_admin_columns', 'apple_admin_audit', 'apple_demo_leads',
+        // 2단계(11-18): 콘텐츠·사이트 설정은 서버에 둔다 — 시안 때 이 브라우저에 남긴 값은 버린다
+        'apple_admin_doctors', 'apple_admin_clinics', 'apple_admin_answers', 'apple_admin_news', 'apple_admin_pricing', 'apple_admin_hours', 'apple_admin_notice', 'apple_admin_main', 'apple_admin_hospital', 'apple_admin_checks'].forEach(function (k) { w.localStorage.removeItem(k); });
       w.sessionStorage.removeItem('apple_admin_session');
       w.localStorage.setItem('apple_admin_ver', VER);
     } catch (e) { /* 저장소를 못 쓰는 브라우저 */ }
@@ -64,7 +66,17 @@
     main.hidden = false;
     skipTo('ad-main');
     showUser();
-    if (AA.seed) { AA.render({ top: true }); tick(); focusH1(); AA.leads.load(); return; }
+    var open = function () { AA.render({ top: true }); tick(); focusH1(); AA.leads.load(); };
+    // 고친 내용(콘텐츠·사이트 설정)은 서버에 있다 — 화면을 그리기 전에 먼저 불러온다(js/sync.js)
+    var withSync = function () {
+      main.innerHTML = '<p class="ad-loading">저장된 내용을 불러오는 중…</p>';
+      AA.sync.load().then(open, function (e) {
+        if (e && e.message === 'login') { AA.sessionExpired(); return; }
+        main.innerHTML = '<div class="ad-note ad-note--warn"><span>' + AA.icon('warn') + '</span><span><span class="ad-note__t">저장된 내용을 불러오지 못했습니다.</span> 인터넷 연결을 확인한 뒤 <button class="ad-linkbtn" type="button" id="ad-sync-retry">다시 불러오기</button>를 눌러 주세요.</span></div>';
+        var b = $('ad-sync-retry'); if (b) b.addEventListener('click', withSync);
+      });
+    };
+    if (AA.seed) { withSync(); return; }
     main.innerHTML = '<p class="ad-loading">자료를 불러오는 중…</p>';
     fetch('../assets/data/admin-seed.json', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -79,10 +91,7 @@
           w.setInterval(function () { if (AA.session.on() && !d.hidden) AA.leads.load(true); }, POLL);
           d.addEventListener('visibilitychange', function () { if (!d.hidden && AA.session.on() && Date.now() - AA.leads.loadedAt > POLL / 2) AA.leads.load(true); });
         }
-        AA.render({ top: true });
-        tick();
-        focusH1();
-        AA.leads.load();
+        withSync();
       })
       .catch(function (e) {
         main.innerHTML = '<div class="ad-note ad-note--warn"><span>' + AA.icon('warn') + '</span><span><span class="ad-note__t">관리자 자료를 불러오지 못했습니다.</span> 인터넷 연결을 확인한 뒤 새로 고쳐 주세요. (' + esc(e && e.message) + ')</span></div>';
@@ -91,6 +100,7 @@
   function leave(msg) {
     AA.session.set(false);
     AA.leads.cache = []; AA.leads.audits = {}; AA.leads.loadedAt = 0; AA.leads.state = 'idle'; // 개인정보를 화면 밖에도 남기지 않는다
+    if (AA.sync) AA.sync.clear();
     AA.drawer.close(true);
     AA.navClose(true);
     try { w.history.replaceState(null, '', w.location.pathname + w.location.search); } catch (e) { w.location.hash = ''; }
@@ -101,6 +111,7 @@
   /** 서버가 열쇠를 받지 않을 때(12시간이 지났거나 비밀번호가 바뀜) — 로그인 화면으로 */
   AA.sessionExpired = function () {
     if ($('ad-app').hidden) return;
+    if (AA.sync && AA.sync.dirty()) AA.toast('저장하지 못한 내용이 있습니다. 다시 로그인한 뒤 한 번 더 저장해 주세요');
     leave('로그인한 지 오래되어 다시 로그인해야 합니다.');
   };
 

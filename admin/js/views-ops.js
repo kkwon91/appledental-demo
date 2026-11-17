@@ -217,7 +217,7 @@
     }).join('');
     return '<section class="ad-card" id="dash-checks" aria-labelledby="dash-checks-t">' +
       '<div class="ad-card__head"><div><h2 class="ad-card__title" id="dash-checks-t">병원 확인 필요 <span class="muted tnum">' + (list.length - applied) + '건</span></h2>' +
-      '<p class="ad-card__sub">새 홈페이지를 만들며 원본끼리 엇갈리거나 근거가 필요한 내용을 주제별로 모았습니다. 병원에서 알려 주시면 모든 페이지를 같은 값으로 맞춥니다. 이 화면에는 주제만 싣고, 자세한 질문은 병원에 따로 보내 드리는 확인 질문지에 있습니다. 진행 표시는 아직 이 브라우저에만 남습니다.</p></div>' +
+      '<p class="ad-card__sub">새 홈페이지를 만들며 원본끼리 엇갈리거나 근거가 필요한 내용을 주제별로 모았습니다. 병원에서 알려 주시면 모든 페이지를 같은 값으로 맞춥니다. 이 화면에는 주제만 싣고, 자세한 질문은 병원에 따로 보내 드리는 확인 질문지에 있습니다. 진행 표시는 서버에 저장되어 다른 관리자와 함께 봅니다.</p></div>' +
       '<div class="ad-actions"><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="check-copy">' + icon('copy') + '확인 주제 목록 복사</button></div></div>' +
       '<div class="ad-grid ad-grid--4" style="margin-bottom:14px">' +
       miniStat('남은 확인', (list.length - applied) + '건') + miniStat('중요', high + '건') + miniStat('답변 받음', answered + '건') + miniStat('반영 완료', applied + '건') + '</div>' +

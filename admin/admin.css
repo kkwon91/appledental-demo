@@ -869,3 +869,15 @@ a.ad-kpi--lead:hover { background: #0B1828; }
 .ad-login__help { margin-top: 24px; max-width: 420px; font-size: 14px; line-height: 1.7; color: var(--ink-2); }
 .ad-login__off { margin-top: 16px; max-width: 420px; padding: 12px 14px; border-left: 2px solid var(--error); background: #FBF4F1; font-size: 14px; font-weight: 600; }
 .ad-pend { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; line-height: 1.7; color: var(--ink-2); }
+
+/* ── 2단계: 서버 저장·홈페이지 반영 상태 ───────────────────────────────────── */
+.ad-top__pub { display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border: 1px solid var(--line); background: var(--sheet); font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-2); white-space: nowrap; cursor: pointer; }
+.ad-top__pub.is-pend { border-color: var(--ink); color: var(--ink); background: #fff; }
+.ad-top__pub.is-warn { border-color: #B4472F; color: #B4472F; background: #fff; }
+.ad-top__pub:hover { border-color: var(--ink); }
+.ad-linkbtn { display: inline; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ad-publist { margin: 14px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--ink); }
+.ad-publist li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+.ad-publist a { color: var(--ink); text-decoration: none; }
+.ad-publist a:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 720px) { .ad-top__pub { padding: 0 9px; font-size: 12.5px; } }

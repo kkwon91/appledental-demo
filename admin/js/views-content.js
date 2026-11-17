@@ -72,14 +72,15 @@
       var depts = (H.departments || []).filter(function (dp) { return list.some(function (x) { return x.dept === dp.id; }); });
       return AA.head({ no: AA.no('doctors'), eyebrow: '콘텐츠', title: '의료진',
         lead: '의료진 소개 페이지와 진료 페이지의 담당 의료진 카드에 나가는 내용입니다. 약력은 원본 그대로 두고, 한 줄 약력은 경력에서만 씁니다.' }) +
-        '<div class="ad-grid ad-grid--4" style="margin-bottom:16px">' + stat('치과의사', visible + '명') + stat('보건복지부 인증 전문의', spec + '명') + stat('진료과', (H.numbers || {}).departments + '개') + stat('의료진 확인 요청', AA.checks.list().filter(function (c) { return (c.area === '의료진' || (c.doctors || []).length) && c.status !== 'applied'; }).length + '건') + '</div>' +
+        AA.pubNote('doctors') +
+        '<div class="ad-grid ad-grid--4" style="margin:14px 0 16px">' + stat('치과의사', visible + '명') + stat('보건복지부 인증 전문의', spec + '명') + stat('진료과', (H.numbers || {}).departments + '개') + stat('의료진 확인 요청', AA.checks.list().filter(function (c) { return (c.area === '의료진' || (c.doctors || []).length) && c.status !== 'applied'; }).length + '건') + '</div>' +
         (spec !== (H.numbers || {}).specialists ? '<p class="ad-note ad-note--warn" style="margin-bottom:14px"><span>' + icon('warn') + '</span><span>전문의 표시가 ' + spec + '명으로 바뀌었습니다. 홈·병원소개·질문 답의 ‘전문의 ' + esc((H.numbers || {}).specialists) + '명’도 함께 고쳐야 합니다.</span></p>' : '') +
         '<div class="ad-chips" role="group" aria-label="진료과로 거르기" style="margin-bottom:14px">' + [{ id: '', name: '전체' }].concat(depts).map(function (dp) {
           var n = dp.id ? list.filter(function (x) { return x.dept === dp.id; }).length : list.length;
           return '<button class="ad-chip" type="button" aria-pressed="' + (du.dept === dp.id) + '" data-act="doc-dept" data-dept="' + esc(dp.id) + '">' + esc(dp.name) + ' <span class="ad-chip__n">' + n + '</span></button>';
         }).join('') + '</div>' +
         '<ul class="ad-docs">' + shown.map(function (x) { return docCard(x, list.indexOf(x), list.length); }).join('') + '</ul>' +
-        '<p class="ad-field__hint" style="margin-top:14px">여기서 바꾼 순서는 아직 이 브라우저에만 남습니다. 의료진 소개 페이지 순서를 바꾸거나 사진을 바꾸려면 운영 담당자에게 알려 주세요(사진은 병원 실사만 씁니다).</p>';
+        '<p class="ad-field__hint" style="margin-top:14px">사진을 바꾸려면 새 사진을 운영 담당자에게 보내 주세요(사진은 병원 실사만 씁니다). ‘의료진 소개에 보이기’를 끄면 의료진 수 표기까지 함께 바뀌므로 운영 담당자가 확인한 뒤 반영합니다.</p>';
     },
     on: {
       'doc-dept': function (el) { du.dept = el.getAttribute('data-dept'); AA.rerender(); },
@@ -125,7 +126,7 @@
     AA.drawer.open({
       eyebrow: '의료진 · ' + x.deptName, title: x.name + ' ' + x.title, wide: true, focus: '#doc-title',
       html: '<div class="ad-doc-photo">' + (x.photo ? '<img src="../' + esc(x.photo) + '" alt="' + esc(x.name + ' ' + x.title + ' 사진') + '" width="120" height="146">' : '<span></span>') +
-        '<div><p class="ad-field__hint">사진은 병원 실사(의료진 개인 사진)만 씁니다. 교체는 실서비스 단계에서 병원이 보내 주신 사진으로 합니다.</p>' + AA.switchHtml({ id: 'doc-show', label: '의료진 소개에 보이기', checked: !x.hidden }) + '</div></div>' +
+        '<div><p class="ad-field__hint">사진은 병원 실사(의료진 개인 사진)만 씁니다. 바꾸려면 새 사진을 운영 담당자에게 보내 주세요.</p>' + AA.switchHtml({ id: 'doc-show', label: '의료진 소개에 보이기', checked: !x.hidden }) + '</div></div>' +
         (checks.length ? checks.map(function (c) { return '<p class="ad-note ad-note--warn"><span>' + icon('warn') + '</span><span><span class="ad-note__t">병원 확인 중 · ' + esc(c.title) + '</span><br>' + esc(c.text) + '</span></p>'; }).join('') : '') +
         '<div class="ad-form"><div class="ad-form-row"><label class="ad-field"><span class="ad-field__label">직함</span><input class="ad-input" id="doc-title" value="' + esc(x.title) + '"></label>' +
         '<label class="ad-field"><span class="ad-field__label">전문의 표시 <small>경력에 적힌 그대로</small></span><input class="ad-input" id="doc-spec" value="' + esc(x.specialist) + '" placeholder="예: 보건복지부 인증 치과보철과 전문의"></label></div>' +
@@ -135,7 +136,7 @@
         '<label class="ad-field"><span class="ad-field__label">경력</span><textarea class="ad-textarea" id="doc-career" rows="5">' + esc((x.career || []).join('\n')) + '</textarea></label>' +
         '<label class="ad-field"><span class="ad-field__label">학회</span><textarea class="ad-textarea" id="doc-soc" rows="5">' + esc((x.societies || []).join('\n')) + '</textarea></label></div>' +
         '<div class="ad-field"><span class="ad-field__label">담당 진료 페이지</span><p class="ad-checks__pages" style="margin:0">' + (pages || '<span class="muted">없음</span>') + '</p></div></div>',
-      foot: '<span class="ad-savebar__msg">이 브라우저에만 저장됩니다</span>' + (x.edited ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="doc-reset" data-id="' + esc(id) + '">' + icon('undo') + '원래대로</button>' : '') +
+      foot: '<span class="ad-savebar__msg">저장한 뒤 반영 요청을 보내면 홈페이지에 나갑니다</span>' + (x.edited ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="doc-reset" data-id="' + esc(id) + '">' + icon('undo') + '원래대로</button>' : '') +
         '<button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="drawer-close">취소</button><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="doc-save" data-id="' + esc(id) + '">저장</button>',
     });
   }
@@ -297,7 +298,7 @@
         var docs = (p.doctors || []).map(function (id) { return (AA.seed.doctors || []).filter(function (x) { return x.id === id; })[0]; }).filter(Boolean);
         return AA.head({ back: { href: '#/clinics', label: '진료 페이지 목록' }, eyebrow: p.group + ' · ' + p.path, title: p.navLabel || p.title,
           actions: AA.siteLink(p.path, '사이트에서 보기') }) +
-          AA.localNote('화면 오른쪽의 AI 인용 점검은 고치는 즉시 다시 셉니다') +
+          AA.pubNote('clinics', '화면 오른쪽의 AI 인용 점검은 고치는 즉시 다시 셉니다.') +
           '<div class="ad-editor" style="margin-top:16px"><div class="ad-stack">' +
           '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:14px">검색·첫 문단</h2><div class="ad-form">' +
           fld('title', '페이지 제목(<title> 앞부분)', { max: 45, hint: '뒤에 ‘| 부천 사과나무치과병원’이 자동으로 붙습니다.' }) +
@@ -349,7 +350,7 @@
         }
         return AA.head({ back: { href: '#/answers', label: '질문 답 목록' }, eyebrow: (a.category || '질문 답') + ' · /answers/' + a.slug + '/', title: a.isNew ? '새 질문 답' : '질문 답 고치기',
           actions: a.isNew ? '<span class="ad-badge ad-badge--plain">새로 만든 초안 — 사이트에 아직 없음</span>' : AA.siteLink('/answers/' + a.slug + '/', '사이트에서 보기') }) +
-          AA.localNote() +
+          AA.pubNote('answers', a.isNew ? '새 질문 답은 주소(영문)와 관련 페이지를 운영 담당자가 정한 뒤 올립니다.' : '') +
           '<div class="ad-editor" style="margin-top:16px"><div class="ad-stack">' +
           '<section class="ad-card"><div class="ad-form">' +
           fld('q', '질문(H1 — 사람들이 묻는 문장 그대로)', { max: 60 }) +
@@ -412,7 +413,8 @@
       return AA.head({ no: AA.no('news'), eyebrow: '콘텐츠', title: '소식 게시판',
         lead: '병원 소식·언론보도·학술행사·사회공헌·의료칼럼 게시판입니다. 홈 ‘병원 소식’ 칸에는 표시한 글 가운데 최신 글이 나가며, 전체회의·채용 같은 내부 글은 홈에 내보내지 않습니다.',
         actions: '<button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="news-monthly">' + icon('clock') + '진료안내 글 만들기</button><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="news-new">' + icon('plus') + '새 글</button>' }) +
-        '<div class="ad-tabs" role="group" aria-label="게시판으로 거르기">' + [{ id: '', name: '전체' }].concat(boards).map(function (b) {
+        AA.pubNote('news', '새 글은 운영 담당자가 소식 페이지에 옮겨 싣습니다.') +
+        '<div class="ad-tabs" role="group" aria-label="게시판으로 거르기" style="margin-top:14px">' + [{ id: '', name: '전체' }].concat(boards).map(function (b) {
           var n = b.id ? all.filter(function (x) { return x.board === b.id; }).length : all.length;
           return '<button class="ad-tab" type="button" aria-pressed="' + (nu.board === b.id) + '" data-act="news-board" data-b="' + esc(b.id) + '">' + esc(b.name) + ' <span class="ad-tab__n">' + n + '</span></button>';
         }).join('') + '</div>' +
@@ -422,7 +424,7 @@
             '<td class="cell-head t-wrap" data-label="제목"><span class="t-strong">' + esc(x.title) + '</span>' + (x.added ? ' <span class="ad-badge ad-badge--plain">새 글</span>' : '') + (x.internal ? ' <span class="ad-badge ad-badge--spam">내부 글</span>' : '') + (x.summary ? '<br><span class="t-cell-sm">' + esc(x.summary.length > 70 ? x.summary.slice(0, 69) + '…' : x.summary) + '</span>' : '') + '</td>' +
             '<td data-label="홈 노출">' + (x.internal ? '<span class="muted" title="내부 글은 홈에 나가지 않습니다">—</span>' : AA.switchHtml({ label: x.home ? '노출' : '안 함', checked: x.home, change: 'news-home', data: ' data-id="' + esc(x.id) + '" aria-label="' + esc(x.title) + ' 홈 노출"' })) + '</td>' +
             '<td data-label="공개">' + AA.switchHtml({ label: x.hidden ? '숨김' : '공개', checked: !x.hidden, change: 'news-show', data: ' data-id="' + esc(x.id) + '" aria-label="' + esc(x.title) + ' 공개"' }) + '</td>' +
-            '<td data-label="원문" class="nw">' + (x.url ? '<a class="ad-ext" href="' + esc(x.url) + '" target="_blank" rel="noopener">원문<span class="ad-sr"> (새 창)</span>' + icon('ext', 'ad-ico--sm') + '</a>' : '<span class="muted">이 브라우저</span>') + '</td></tr>';
+            '<td data-label="원문" class="nw">' + (x.url ? '<a class="ad-ext" href="' + esc(x.url) + '" target="_blank" rel="noopener">원문<span class="ad-sr"> (새 창)</span>' + icon('ext', 'ad-ico--sm') + '</a>' : '<span class="muted">새 글</span>') + '</td></tr>';
         }).join('') + '</tbody></table></div>';
     },
     on: {
@@ -441,7 +443,7 @@
         var item = { id: 'local-' + Date.now().toString(36), board: g('nw-board') || 'news', title: title, date: g('nw-date') || AA.kst().ymd, summary: body.replace(/\s+/g, ' ').slice(0, 120), body: body, url: '', home: !!(d.getElementById('nw-home') || {}).checked, internal: /전체회의|채용|신입/.test(title), status: 'published' };
         ov._added = [item].concat(ov._added || []);
         AA.store.set(AA.KEYS.news, ov);
-        AA.drawer.close(true); AA.toast('글을 올렸습니다(이 브라우저)'); AA.rerender();
+        AA.drawer.close(true); AA.toast('글을 저장했습니다 — 반영 요청을 보내면 홈페이지에 나갑니다'); AA.rerender();
       },
     },
   };
@@ -470,7 +472,7 @@
         '<div id="nw-rules">' + AA.rules.report((x.title || '') + '\n' + (x.body || '')) + '</div>' +
         AA.switchHtml({ id: 'nw-home', label: '홈 ‘병원 소식’에 노출', checked: x.home !== false }) +
         (x.title ? '<p class="ad-field__hint">진료시간·휴진 설정(사이트 설정 › 진료시간·휴진)에서 자동으로 채웠습니다. 내용을 확인하고 올리세요.</p>' : '') + '</div>',
-      foot: '<span class="ad-savebar__msg">이 브라우저에만 저장됩니다</span><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="drawer-close">취소</button><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="news-save">올리기</button>',
+      foot: '<span class="ad-savebar__msg">저장한 뒤 반영 요청을 보내면 홈페이지에 나갑니다</span><button class="ad-btn ad-btn--line ad-btn--sm" type="button" data-act="drawer-close">취소</button><button class="ad-btn ad-btn--ink ad-btn--sm" type="button" data-act="news-save">올리기</button>',
     });
   }
 

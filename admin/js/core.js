@@ -1,6 +1,6 @@
 /* 관리자 — 공통: 저장소 · 날짜 · 이스케이프 · 아이콘 · 화면 틀(라우터) · 서랍·대화상자 · 알림 · 진료시간 계산 · 금칙어 검사
    프레임워크 없이 해시 라우팅(#/leads, #/clinics/…). 모든 데이터 글자는 AA.esc 로 이스케이프한다.
-   로그인·상담 신청은 사이트 운영 서버(js/remote.js). 콘텐츠·사이트 설정 화면의 편집은 아직 localStorage 'apple_admin_*'(이 브라우저)에만 남는다. */
+   로그인·상담 신청은 사이트 운영 서버(js/remote.js). 콘텐츠·사이트 설정 화면의 편집도 서버에 둔다(js/sync.js 가 AA.store 의 해당 키를 서버 값으로 바꿔 끼운다). 화면 상태(ui)만 이 브라우저에 남는다. */
 (function () {
   'use strict';
   var w = window;
@@ -171,10 +171,6 @@
       '<h1 class="ad-head__title" id="ad-h1">' + esc(o.title) + '</h1>' +
       (o.leadHtml ? '<p class="ad-head__lead">' + o.leadHtml + '</p>' : o.lead ? '<p class="ad-head__lead">' + esc(o.lead) + '</p>' : '') +
       '</div>' + (o.actions ? '<div class="ad-head__actions">' + o.actions + '</div>' : '') + '</header>';
-  };
-  /** 아직 서버에 저장하지 않는 화면의 안내 띠 */
-  AA.localNote = function (extra) {
-    return '<p class="ad-note"><span>' + AA.icon('info') + '</span><span>이 화면에서 저장한 내용은 아직 <b>이 브라우저에만</b> 남고 홈페이지에는 반영되지 않습니다' + (extra ? '. ' + extra : '. 홈페이지에 반영하려면 운영 담당자에게 알려 주세요.') + '</span></p>';
   };
   /** 아직 열지 않은 메뉴 화면. o: { name, eyebrow, title, lead, need:[글…] } */
   AA.pendingView = function (o) {
