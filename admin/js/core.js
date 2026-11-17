@@ -1,6 +1,6 @@
-/* 관리자 데모 — 공통: 저장소 · 날짜 · 이스케이프 · 아이콘 · 화면 틀(라우터) · 서랍·대화상자 · 알림 · 진료시간 계산 · 금칙어 검사
+/* 관리자 — 공통: 저장소 · 날짜 · 이스케이프 · 아이콘 · 화면 틀(라우터) · 서랍·대화상자 · 알림 · 진료시간 계산 · 금칙어 검사
    프레임워크 없이 해시 라우팅(#/leads, #/clinics/…). 모든 데이터 글자는 AA.esc 로 이스케이프한다.
-   저장: localStorage 'apple_admin_*'(관리자 데모 전용) — 상담 신청 원본은 사이트 폼이 쓰는 'apple_demo_leads'. */
+   로그인·상담 신청은 사이트 운영 서버(js/remote.js). 콘텐츠·사이트 설정 화면의 편집은 아직 localStorage 'apple_admin_*'(이 브라우저)에만 남는다. */
 (function () {
   'use strict';
   var w = window;
@@ -48,19 +48,17 @@
       return out;
     },
   };
+  // 로그인 상태 = 서버가 준 열쇠(12시간)가 이 창에 살아 있는가(js/remote.js)
   AA.session = {
-    KEY: 'apple_admin_session',
-    on: function () { try { return w.sessionStorage.getItem(this.KEY) === '1'; } catch (e) { return !!AA._sessionMem; } },
-    set: function (v) {
-      AA._sessionMem = v;
-      try { if (v) w.sessionStorage.setItem(this.KEY, '1'); else w.sessionStorage.removeItem(this.KEY); } catch (e) { /* 메모리로만 */ }
-    },
+    on: function () { return !!(AA.remote && AA.remote.token()); },
+    set: function (v) { if (!v && AA.remote) AA.remote.clearToken(); },
   };
-  /** 개인정보 열람 같은 기록(이 브라우저) */
+  AA.who = function () { return (AA.remote && AA.remote.who()) || '관리자'; };
+  /** 목록 내려받기 같은 기록(이 브라우저). 상담 신청의 상태 바꿈·메모·연락처 열람은 서버에 남는다(views-ops.js) */
   AA.audit = function (what, target) {
     var list = AA.store.get(AA.KEYS.audit, []);
     if (!Array.isArray(list)) list = [];
-    list.push({ at: new Date().toISOString(), what: what, target: target || '', by: '데모 관리자' });
+    list.push({ at: new Date().toISOString(), what: what, target: target || '', by: AA.who() });
     AA.store.set(AA.KEYS.audit, list.slice(-300));
   };
 
@@ -80,7 +78,7 @@
   AA.addDays = function (ymd, n) { var t = Date.parse(ymd + 'T00:00:00Z') + n * 86400000; return new Date(t).toISOString().slice(0, 10); };
   AA.daysBetween = function (a, b) { return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000); };
   AA.dowOf = function (ymd) { return new Date(ymd + 'T00:00:00Z').getUTCDay(); };
-  AA.REF = AA.kst().ymd; // 기준일(예시 데이터를 오늘에 맞춘 뒤 정해짐)
+  AA.REF = AA.kst().ymd; // 기준일 = 오늘(한국 시간)
   /** 기준일 포함 최근 n일 안인가(기준일보다 뒤인 실제 신청도 포함) */
   AA.inLast = function (t, n) { return AA.ymdOf(t) >= AA.addDays(AA.REF, -(n - 1)); };
   AA.inPrev = function (t, n) { var y = AA.ymdOf(t); return y >= AA.addDays(AA.REF, -(2 * n - 1)) && y <= AA.addDays(AA.REF, -n); };
@@ -94,7 +92,7 @@
     time: function (t) { var k = AA.kst(t); return pad(k.hh) + ':' + pad(k.mm); },
     rel: function (t) {
       var ms = Date.now() - Date.parse(t);
-      if (ms < 0) return '방금 전'; // 다른 탭·기기의 시계가 조금 빠른 경우(예시 데이터는 지금보다 뒤로 옮기지 않는다)
+      if (ms < 0) return '방금 전'; // 서버·기기의 시계가 조금 어긋난 경우
       var m = Math.floor(ms / 60000);
       if (m < 1) return '방금 전';
       if (m < 60) return m + '분 전';
@@ -174,16 +172,18 @@
       (o.leadHtml ? '<p class="ad-head__lead">' + o.leadHtml + '</p>' : o.lead ? '<p class="ad-head__lead">' + esc(o.lead) + '</p>' : '') +
       '</div>' + (o.actions ? '<div class="ad-head__actions">' + o.actions + '</div>' : '') + '</header>';
   };
-  /** 예시 데이터 안내 띠 */
-  AA.exampleNote = function (html) {
-    return '<p class="ad-note ad-note--example"><span class="ad-dot ad-dot--blue" aria-hidden="true"></span><span>' + html + '</span></p>';
-  };
-  AA.gmNote = function () {
-    var g = (AA.seed && AA.seed.growthmate) || {};
-    return AA.exampleNote('<span class="ad-note__t">예시 데이터</span> — 실제 연결 시 그로스메이트(광고주 ' + esc(g.advertiserId || 34) + '·추적 설치 ' + esc(g.installRowId || 32) + ') 데이터가 이 자리에 들어옵니다. 지금 숫자는 화면 구성을 보여 드리기 위한 예시입니다.');
-  };
+  /** 아직 서버에 저장하지 않는 화면의 안내 띠 */
   AA.localNote = function (extra) {
-    return '<p class="ad-note"><span>' + AA.icon('info') + '</span><span>데모에서 저장한 내용은 <b>이 브라우저에만</b> 남고 사이트 페이지에는 반영되지 않습니다' + (extra ? '. ' + extra : '.') + '</span></p>';
+    return '<p class="ad-note"><span>' + AA.icon('info') + '</span><span>이 화면에서 저장한 내용은 아직 <b>이 브라우저에만</b> 남고 홈페이지에는 반영되지 않습니다' + (extra ? '. ' + extra : '. 홈페이지에 반영하려면 운영 담당자에게 알려 주세요.') + '</span></p>';
+  };
+  /** 아직 열지 않은 메뉴 화면. o: { name, eyebrow, title, lead, need:[글…] } */
+  AA.pendingView = function (o) {
+    return { render: function () {
+      return AA.head({ no: AA.no(o.name), eyebrow: o.eyebrow, title: o.title, lead: o.lead }) +
+        '<section class="ad-card" aria-labelledby="pend-t"><div class="ad-card__head"><div><h2 class="ad-card__title" id="pend-t">준비 중인 화면입니다</h2>' +
+        '<p class="ad-card__sub">실제 기록이 연결되면 이 화면이 열립니다. 그 전에는 지어낸 숫자를 보여 드리지 않습니다.</p></div></div>' +
+        '<ul class="ad-pend">' + (o.need || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></section>';
+    } };
   };
   /** 사이트 경로 → 관리자에서 여는 상대 주소(../implant/) */
   AA.siteHref = function (p) { return '..' + (String(p || '/').charAt(0) === '/' ? '' : '/') + String(p || '/'); };
@@ -470,38 +470,11 @@
     count: function (text) { return this.scan(text).length; },
   };
 
-  // ── 예시 데이터를 오늘에 맞추기(나중에 열어도 '이번 주'가 살아 있게) ──────────────────────
-  //   하루 단위로 옮겨 요일·시각 모양(오전 신청·야간 신청)은 그대로 두되, 옮긴 기록이 '지금'보다 뒤가 되지 않게 한다.
-  //   예시 기록 가운데 가장 늦은 시각(예: 10.14 09:40)을 기준으로 삼아, 지금 그 시각을 아직 지나지 않았으면(이른 아침) 하루 덜 옮긴다.
-  //   그래서 이른 시간에 열면 예시 기록은 어제까지 있고 오늘 칸은 비어 있다(이 브라우저에서 넣은 실제 신청만 오늘에 들어감).
+  // ── 관리자 자료(admin-seed.json) 준비 — 기준일을 오늘(한국 시간)로 ─────────────────────
   AA.prepareSeed = function (seed) {
-    var now = Date.now();
-    var last = 0;
-    var see = function (t) { var x = Date.parse(t); if (!isNaN(x) && x > last) last = x; };
-    (seed.leads || []).forEach(function (l) { see(l.createdAt); (l.history || []).forEach(function (h) { see(h.at); }); });
-    (seed.online || []).forEach(function (q) { see(q.createdAt); if (q.answer) see(q.answer.at); });
-    ((seed.forbiddenCheck || {}).drafts || []).forEach(function (x) { see(x.createdAt); (x.history || []).forEach(function (h) { see(h.at); }); });
-    if (!last) last = Date.parse(seed.demo.today + 'T00:00:00+09:00');
-    var off = Math.floor((now - last) / 86400000); // 기준 시각 + off일 ≤ 지금(시계가 예시보다 앞이면 음수 — 뒤로 옮긴다)
-    var today = AA.kst(now).ymd;
-    AA.offset = off;
-    AA.REF = today; // '오늘'은 언제나 실제 오늘(한국 시간)
-    seed.demo.today = today;
-    if (!off) return seed;
-    var ms = off * 86400000;
-    var iso = function (t) { return t ? new Date(Date.parse(t) + ms).toISOString() : t; };
-    var ymd = function (t) { return t ? AA.addDays(t, off) : t; };
-    (seed.leads || []).forEach(function (l) { l.createdAt = iso(l.createdAt); (l.history || []).forEach(function (h) { h.at = iso(h.at); }); });
-    (seed.online || []).forEach(function (q) { q.createdAt = iso(q.createdAt); if (q.answer) q.answer.at = iso(q.answer.at); });
-    var fc = seed.forbiddenCheck || {};
-    (fc.drafts || []).forEach(function (x) { x.date = ymd(x.date); x.createdAt = iso(x.createdAt); (x.history || []).forEach(function (h) { h.at = iso(h.at); }); });
-    ((seed.selfcheck && seed.selfcheck.example && seed.selfcheck.example.daily) || []).forEach(function (x) { x.date = ymd(x.date); });
-    ((seed.conversion && seed.conversion.daily) || []).forEach(function (x) { x.date = ymd(x.date); });
-    if (seed.aeo && seed.aeo.measures) seed.aeo.measures = seed.aeo.measures.map(ymd);
-    seed.demo.start = ymd(seed.demo.start);
+    AA.REF = AA.kst(Date.now()).ymd;
     return seed;
   };
-
   // ── 라우터·화면 틀 ────────────────────────────────────────────────────────────
   AA.TITLES = {
     dashboard: '대시보드', leads: '상담 신청', online: '온라인 상담', doctors: '의료진', clinics: '진료 페이지', answers: '질문 답 페이지',

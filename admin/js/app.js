@@ -1,4 +1,4 @@
-/* 관리자 데모 — 시작: 로그인(데모 계정, sessionStorage 플래그만) · 데이터 불러오기 · 라우팅 시작 · 진료 상태 시계 · 다른 탭의 새 신청 반영 */
+/* 관리자 — 시작: 로그인(사이트 운영 서버가 확인) · 자료 불러오기 · 라우팅 시작 · 진료 상태 시계 · 상담 신청 1분마다 새로 확인 */
 (function () {
   'use strict';
   var w = window;
@@ -6,15 +6,26 @@
   var AA = w.AA;
   var esc = AA.esc;
   var started = false;
-  var ACC = { id: 'apple', pw: 'demo1234' }; // 데모용 — 실제 관리자 로그인은 실서비스 단계에서 서버 인증으로 바꾼다
+  var VER = 'ops-20261117'; // 시안 때 이 브라우저에 남긴 관리자 저장값(예시 신청의 상태·메모 등)을 한 번 비우는 표식
+  var POLL = 60000;
 
   function $(id) { return d.getElementById(id); }
+  // 시안(데모) 때 이 브라우저에 쌓인 값 정리 — 예시 신청에 덧씌운 상태·메모, 예시 온라인 상담·칼럼 초안의 저장값, 사이트 폼이 쌓던 신청, 옛 로그인 표식
+  (function cleanOld() {
+    try {
+      if (w.localStorage.getItem('apple_admin_ver') === VER) return;
+      ['apple_admin_leads', 'apple_admin_online', 'apple_admin_columns', 'apple_admin_audit', 'apple_demo_leads'].forEach(function (k) { w.localStorage.removeItem(k); });
+      w.sessionStorage.removeItem('apple_admin_session');
+      w.localStorage.setItem('apple_admin_ver', VER);
+    } catch (e) { /* 저장소를 못 쓰는 브라우저 */ }
+  })();
+
   // 로그인 화면과 관리자 화면은 한쪽만 문서에 둔다 — 숨긴 쪽의 H1·main 이 남아 문서에 H1·main 이 둘이 되지 않게.
   //   로그인 뒤에는 로그인 화면(#ad-login)을 떼어 두었다가(이벤트는 그대로) 로그아웃하면 다시 붙인다.
   var loginEl = null;
   function skipTo(id) { var s = d.querySelector('.ad-skip'); if (s) s.setAttribute('href', '#' + id); }
   function focusH1() { var h = $('ad-h1'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } } }
-  function showLogin() {
+  function showLogin(msg) {
     var app = $('ad-app');
     if (loginEl && !loginEl.parentNode) app.parentNode.insertBefore(loginEl, app);
     app.hidden = true;
@@ -23,6 +34,13 @@
     $('ad-login').hidden = false;
     skipTo('ad-login-main');
     d.title = '관리자 로그인 | 부천 사과나무치과병원';
+    var err = $('ad-login-err');
+    if (err) { err.textContent = msg || ''; err.hidden = !msg; }
+    var off = $('ad-login-off');
+    var on = !!(AA.remote && AA.remote.on);
+    if (off) off.hidden = on;
+    var btn = d.querySelector('#ad-login-form [type="submit"]');
+    if (btn) btn.disabled = !on;
     setTimeout(function () { var i = $('ad-login-id'); if (i) i.focus(); }, 30);
   }
   function tick() {
@@ -31,6 +49,13 @@
     var st = AA.hours.status();
     el.innerHTML = '<span class="ad-dot ' + (st.state === 'open' ? 'ad-dot--green' : 'ad-dot--off') + '" aria-hidden="true"></span>' + esc(st.short) + (st.state === 'open' ? ' · ' + esc(st.long.split(' · ')[1] || '') : '');
   }
+  function showUser() {
+    var n = d.querySelector('.ad-top__name');
+    var a = d.querySelector('.ad-top__avatar');
+    var who = AA.who();
+    if (n) n.textContent = who;
+    if (a) a.textContent = who.charAt(0).toUpperCase() || '관';
+  }
   function start() {
     var lg = $('ad-login');
     if (lg) { loginEl = lg; lg.hidden = true; lg.remove(); }
@@ -38,8 +63,9 @@
     var main = $('ad-main');
     main.hidden = false;
     skipTo('ad-main');
-    if (AA.seed) { AA.render({ top: true }); tick(); focusH1(); return; }
-    main.innerHTML = '<p class="ad-loading">데이터를 불러오는 중…</p>';
+    showUser();
+    if (AA.seed) { AA.render({ top: true }); tick(); focusH1(); AA.leads.load(); return; }
+    main.innerHTML = '<p class="ad-loading">자료를 불러오는 중…</p>';
     fetch('../assets/data/admin-seed.json', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (seed) {
@@ -49,60 +75,65 @@
           started = true;
           w.addEventListener('hashchange', function () { if (!AA.session.on()) return; AA.drawer.close(true); AA.render(); });
           w.setInterval(tick, 60000);
-          // 다른 탭(데모 사이트)에서 상담 신청·자가진단을 하면 바로 반영
-          w.addEventListener('storage', function (e) {
-            if (!AA.seed || !e.key || !AA.session.on()) return; // 로그아웃 중에는 숨은 화면을 다시 그리지 않는다(H1 이 둘이 되지 않게)
-            if (e.key === 'apple_demo_leads') { AA.toast('새 상담 신청이 들어왔습니다'); if (!AA.drawer.el) AA.rerender(); else AA.refreshBadges(); }
-            else if (e.key === 'apple_selfcheck_stats' && AA.route && (AA.route.name === 'selfcheck' || AA.route.name === 'dashboard') && !AA.drawer.el) AA.rerender();
-          });
+          // 새 상담 신청 확인: 1분마다(창을 보고 있을 때만), 다른 창에 다녀왔을 때도 한 번
+          w.setInterval(function () { if (AA.session.on() && !d.hidden) AA.leads.load(true); }, POLL);
+          d.addEventListener('visibilitychange', function () { if (!d.hidden && AA.session.on() && Date.now() - AA.leads.loadedAt > POLL / 2) AA.leads.load(true); });
         }
         AA.render({ top: true });
         tick();
         focusH1();
+        AA.leads.load();
       })
       .catch(function (e) {
-        main.innerHTML = '<div class="ad-note ad-note--warn"><span>' + AA.icon('warn') + '</span><span><span class="ad-note__t">관리자 데이터를 불러오지 못했습니다.</span> 사이트를 빌드한 뒤(node src/build.mjs) 웹 서버로 열어 주세요. (' + esc(e && e.message) + ')</span></div>';
+        main.innerHTML = '<div class="ad-note ad-note--warn"><span>' + AA.icon('warn') + '</span><span><span class="ad-note__t">관리자 자료를 불러오지 못했습니다.</span> 인터넷 연결을 확인한 뒤 새로 고쳐 주세요. (' + esc(e && e.message) + ')</span></div>';
       });
   }
-
-  AA.actions.logout = function () {
+  function leave(msg) {
     AA.session.set(false);
+    AA.leads.cache = []; AA.leads.audits = {}; AA.leads.loadedAt = 0; AA.leads.state = 'idle'; // 개인정보를 화면 밖에도 남기지 않는다
     AA.drawer.close(true);
     AA.navClose(true);
     try { w.history.replaceState(null, '', w.location.pathname + w.location.search); } catch (e) { w.location.hash = ''; }
-    showLogin();
-    AA.toast('로그아웃했습니다');
-  };
-  AA.actions['reset-demo'] = function () {
-    AA.confirm({ title: '데모 데이터를 처음으로 돌릴까요?', msg: '이 브라우저에 저장된 관리자 설정(상태·메모·답변·고친 문구·진료시간·띠배너 등)을 모두 지웁니다. 사이트 상담 폼으로 넣은 신청은 그대로 둡니다.', ok: '처음으로', danger: true }).then(function (yes) {
-      if (!yes) return;
-      AA.store.adminKeys().forEach(function (k) { AA.store.del(k); });
-      AA.toast('관리자 데모 데이터를 처음으로 돌렸습니다');
-      AA.render({ keep: true });
-      tick();
-    });
+    showLogin(msg);
+  }
+
+  AA.actions.logout = function () { leave(); AA.toast('로그아웃했습니다'); };
+  /** 서버가 열쇠를 받지 않을 때(12시간이 지났거나 비밀번호가 바뀜) — 로그인 화면으로 */
+  AA.sessionExpired = function () {
+    if ($('ad-app').hidden) return;
+    leave('로그인한 지 오래되어 다시 로그인해야 합니다.');
   };
 
+  var LOGIN_ERR = {
+    wrong: '아이디 또는 비밀번호가 맞지 않습니다.',
+    locked: '여러 번 틀려 잠시 잠겼습니다. 15분 뒤에 다시 해 주세요.',
+    closed: '지금은 관리자 화면을 쓸 수 없습니다(운영 정지). 운영 담당자에게 문의해 주세요.',
+  };
   function boot() {
     var form = $('ad-login-form');
     var err = $('ad-login-err');
+    var busy = false;
     if (form) form.addEventListener('submit', function (e) {
       e.preventDefault();
+      if (busy) return;
       var id = (form.elements.id.value || '').trim();
       var pw = form.elements.pw.value || '';
-      if (id === ACC.id && pw === ACC.pw) {
-        err.hidden = true;
-        form.reset();
-        AA.session.set(true);
-        start();
-      } else {
-        err.textContent = !id || !pw ? '아이디와 비밀번호를 모두 넣어 주세요.' : '아이디 또는 비밀번호가 맞지 않습니다. 아래 데모 계정을 확인해 주세요.';
-        err.hidden = false;
-        (id ? form.elements.pw : form.elements.id).focus();
-      }
+      var say = function (m, focusPw) { err.textContent = m; err.hidden = false; (focusPw ? form.elements.pw : form.elements.id).focus(); };
+      if (!AA.remote || !AA.remote.on) return say('운영 서버 연결 전이라 로그인할 수 없습니다.');
+      if (!id || !pw) return say('아이디와 비밀번호를 모두 넣어 주세요.', !!id);
+      var btn = form.querySelector('[type="submit"]');
+      busy = true; btn.disabled = true; btn.textContent = '확인하는 중…';
+      var done = function () { busy = false; btn.disabled = false; btn.textContent = '로그인'; };
+      AA.remote.login(id, pw).then(function (r) {
+        done();
+        if (r && r.ok) { err.hidden = true; form.reset(); start(); return; }
+        form.elements.pw.value = '';
+        say(LOGIN_ERR[r && r.err] || '로그인하지 못했습니다. 잠시 뒤 다시 해 주세요.', true);
+      }, function () {
+        done();
+        say('운영 서버에 연결하지 못했습니다. 인터넷 연결을 확인한 뒤 다시 해 주세요.', true);
+      });
     });
-    var fill = d.querySelector('[data-fill-demo]');
-    if (fill) fill.addEventListener('click', function () { form.elements.id.value = ACC.id; form.elements.pw.value = ACC.pw; err.hidden = true; form.querySelector('[type="submit"]').focus(); });
     if (AA.session.on()) start(); else showLogin();
   }
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();

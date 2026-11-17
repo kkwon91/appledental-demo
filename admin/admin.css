@@ -864,3 +864,8 @@ a.ad-kpi--lead:hover { background: #0B1828; }
   .ad-side, .ad-top, .ad-privacy, .ad-savebar, .ad-toast { display: none !important; }
   .ad-app { display: block; }
 }
+
+/* 운영 준비(2026-11-17): 로그인 안내 · 준비 중 화면 */
+.ad-login__help { margin-top: 24px; max-width: 420px; font-size: 14px; line-height: 1.7; color: var(--ink-2); }
+.ad-login__off { margin-top: 16px; max-width: 420px; padding: 12px 14px; border-left: 2px solid var(--error); background: #FBF4F1; font-size: 14px; font-weight: 600; }
+.ad-pend { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; line-height: 1.7; color: var(--ink-2); }

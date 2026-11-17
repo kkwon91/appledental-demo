@@ -1,5 +1,5 @@
-/* 관리자 데모 — 사이트 설정: 비급여 진료비 · 진료시간·휴진 · 공지 띠배너 · 메인 화면 · 병원 정보(+네이버 플레이스 글자 일치 점검)
-   진료시간('apple_admin_hours')과 띠배너('apple_admin_notice')는 저장하면 이 브라우저의 데모 사이트에 바로 반영된다
+/* 관리자 — 사이트 설정: 비급여 진료비 · 진료시간·휴진 · 공지 띠배너 · 메인 화면 · 병원 정보(+네이버 플레이스 글자 일치 점검)
+   진료시간('apple_admin_hours')과 띠배너('apple_admin_notice')는 저장하면 이 브라우저에서 여는 홈페이지에만 바로 반영된다(아직 서버에 저장하지 않음 — 다른 방문자에게는 보이지 않는다)
    (사이트 쪽 assets/js/05-admin-bridge.js 가 읽는다). 나머지는 이 브라우저에만 남는다. */
 (function () {
   'use strict';
@@ -136,7 +136,7 @@
           '<button class="ad-ibtn" type="button" data-act="hr-sp-del" data-i="' + i + '" aria-label="' + esc(s.date + ' 일정 지우기') + '">' + icon('trash') + '</button></li>';
       };
       return AA.head({ no: AA.no('hours'), eyebrow: '사이트 설정', title: '진료시간·휴진',
-        lead: '요일별 진료시간과 휴진·특별 진료일을 정합니다. 저장하면 이 브라우저의 데모 사이트에서 헤더의 ‘지금 진료 중’, 띠배너, 진료시간 그래프와 요일별 표, 점심시간, 푸터 진료시간이 바로 바뀝니다. 본문 문장(첫 문단 등)은 데모에서 바뀌지 않아, 바뀐 페이지에는 그렇다는 안내가 함께 보입니다.',
+        lead: '요일별 진료시간과 휴진·특별 진료일을 정합니다. 아직은 저장해도 이 브라우저에서 여는 홈페이지에만 반영됩니다(헤더의 ‘지금 진료 중’, 띠배너, 진료시간 그래프와 요일별 표, 점심시간, 푸터 진료시간). 다른 방문자가 보는 홈페이지를 바꾸려면 운영 담당자에게 알려 주세요.',
         actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="../visit/" target="_blank" rel="noopener">사이트에서 확인<span class="ad-sr"> (새 창)</span></a>' }) +
         (stored ? '<p class="ad-note ad-note--ok" style="margin-bottom:14px"><span>' + icon('check') + '</span><span>관리자에서 정한 진료시간을 사이트에 쓰고 있습니다(' + esc(AA.fmt.dt(stored.updatedAt || new Date().toISOString())) + ' 저장 · 이 브라우저).</span></p>' : '') +
         '<section class="ad-card" id="hr-pv" style="margin-bottom:16px">' + hoursPreview(H) + '</section>' +
@@ -171,7 +171,7 @@
         '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:8px">같은 시간끼리 묶으면</h2><ul class="ad-aeo">' + AA.hours.groups(H.days).map(function (g) { return '<li class="is-ok">' + icon('clock') + '<span><b>' + esc(g.label) + '</b> ' + esc(AA.korTime(g.o, true) + ' – ' + AA.korTime(g.c, true)) + (g.night ? ' · 야간진료' : '') + '</span></li>'; }).join('') +
         '<li class="is-ok">' + icon('x') + '<span><b>' + esc(AA.hours.offDays(H.days).join('·') || '없음') + '</b> 휴진</span></li></ul>' +
         '<p class="ad-field__hint" style="margin-top:10px">구조화 데이터(AI가 읽는 진료시간)도 이 묶음으로 나갑니다.</p></section></aside></div>' +
-        '<div class="ad-savebar"><p class="ad-savebar__msg" id="hr-msg">저장하면 이 브라우저의 데모 사이트에 바로 반영됩니다</p>' + (stored ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="hr-reset">' + icon('undo') + '원래 진료시간으로</button>' : '') + '<button class="ad-btn ad-btn--ink" type="button" data-act="hr-save">저장</button></div>';
+        '<div class="ad-savebar"><p class="ad-savebar__msg" id="hr-msg">저장하면 이 브라우저에서 여는 홈페이지에만 반영됩니다</p>' + (stored ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="hr-reset">' + icon('undo') + '원래 진료시간으로</button>' : '') + '<button class="ad-btn ad-btn--ink" type="button" data-act="hr-save">저장</button></div>';
     },
     on: {
       'hr-on': function (el) { var n = +el.getAttribute('data-n'); hu.work.days[n].on = el.checked; dirty(); AA.rerender(); },
@@ -192,7 +192,7 @@
         var bad = hu.work.days.filter(function (x) { return x.on && AA.toMin(x.c) <= AA.toMin(x.o); });
         if (bad.length) { AA.toast(bad.map(function (x) { return AA.DOW[x.dow]; }).join('·') + '요일 끝 시간이 시작보다 늦어야 합니다'); return; }
         var rec = { v: 1, days: hu.work.days, special: hu.work.special || [], lunch: hu.work.lunch || [], closedText: hu.work.closedText, holidayText: hu.work.holidayText, updatedAt: new Date().toISOString() };
-        if (AA.store.set(AA.KEYS.hours, rec)) { AA.toast('저장했습니다 — 이 브라우저의 데모 사이트에 반영됩니다'); hu.work = null; AA.rerender(); }
+        if (AA.store.set(AA.KEYS.hours, rec)) { AA.toast('저장했습니다 — 이 브라우저에서 여는 홈페이지에만 반영됩니다'); hu.work = null; AA.rerender(); }
       },
       'hr-reset': function () {
         AA.confirm({ title: '원래 진료시간으로 되돌릴까요?', msg: '관리자에서 정한 진료시간·휴진일을 지우고 병원 기본 진료시간으로 돌아갑니다.', ok: '되돌리기', danger: true }).then(function (y) { if (!y) return; AA.store.del(AA.KEYS.hours); hu.work = null; AA.toast('원래 진료시간으로 되돌렸습니다'); AA.rerender(); });
@@ -235,7 +235,7 @@
       if (upcoming) tpl.unshift(['다가오는 일정', AA.fmt.date(upcoming.date) + ' ' + (upcoming.type === 'closed' ? (upcoming.label ? upcoming.label + ' ' : '') + '휴진합니다' : AA.korTime(upcoming.o) + '~' + AA.korTime(upcoming.c) + ' 진료합니다')]);
       var len = AA.textLen(n.text);
       return AA.head({ no: AA.no('notice'), eyebrow: '사이트 설정', title: '공지 띠배너',
-        lead: '모든 페이지 맨 위의 어두운 띠에 들어가는 공지입니다. 명절 휴진·진료시간 변경처럼 모든 방문자가 알아야 할 것만 짧게 씁니다. 저장하면 이 브라우저의 데모 사이트에 바로 보입니다.',
+        lead: '모든 페이지 맨 위의 어두운 띠에 들어가는 공지입니다. 명절 휴진·진료시간 변경처럼 모든 방문자가 알아야 할 것만 짧게 씁니다. 아직은 저장해도 이 브라우저에서 여는 홈페이지에만 보입니다. 다른 방문자에게 보이게 하려면 운영 담당자에게 알려 주세요.',
         actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="../" target="_blank" rel="noopener">사이트에서 확인<span class="ad-sr"> (새 창)</span></a>' }) +
         (stored ? '<p class="ad-note ad-note--ok" style="margin-bottom:14px"><span>' + icon('check') + '</span><span>공지 띠배너를 사이트에 쓰고 있습니다(이 브라우저).</span></p>' : '') +
         '<section class="ad-card" id="nt-pv" style="margin-bottom:16px">' + noticePv(n) + '</section>' +
@@ -250,7 +250,7 @@
         '<aside class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">문구 틀</h2><p class="ad-field__hint" style="margin-bottom:10px">누르면 공지 문구에 들어갑니다. ○는 고쳐 쓰세요.</p><div class="ad-chips" style="display:grid;gap:8px">' +
         tpl.map(function (t, i) { return '<button class="ad-chip" type="button" data-act="nt-tpl" data-i="' + i + '" style="justify-content:flex-start;white-space:normal;text-align:left;min-height:52px;padding:8px 12px"><span><b>' + esc(t[0]) + '</b><br><span class="muted">' + esc(t[1]) + '</span></span></button>'; }).join('') + '</div>' +
         '<p class="ad-field__hint" style="margin-top:12px">할인·이벤트 같은 환자 유인 문구는 쓸 수 없습니다.</p></aside></div>' +
-        '<div class="ad-savebar"><p class="ad-savebar__msg" id="nt-msg">저장하면 이 브라우저의 데모 사이트에 바로 반영됩니다</p>' + (stored ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="nt-reset">' + icon('undo') + '기본 띠배너로</button>' : '') + '<button class="ad-btn ad-btn--ink" type="button" data-act="nt-save">저장</button></div>';
+        '<div class="ad-savebar"><p class="ad-savebar__msg" id="nt-msg">저장하면 이 브라우저에서 여는 홈페이지에만 반영됩니다</p>' + (stored ? '<button class="ad-btn ad-btn--ghost ad-btn--sm" type="button" data-act="nt-reset">' + icon('undo') + '기본 띠배너로</button>' : '') + '<button class="ad-btn ad-btn--ink" type="button" data-act="nt-save">저장</button></div>';
       // 문구 틀은 렌더 때마다 같은 순서로 다시 만든다(nt-tpl 에서 같은 계산)
     },
     on: {
@@ -272,7 +272,7 @@
         if (/○/.test(n.text)) { AA.toast('○ 자리를 실제 날짜·이름으로 바꿔 주세요'); var inp = d.getElementById('nt-text'); if (inp) inp.focus(); return; }
         if (n.start && n.end && n.end < n.start) { AA.toast('끝 날짜가 시작보다 늦어야 합니다'); return; }
         var rec = { enabled: n.enabled !== false, text: String(n.text || '').trim(), more: String(n.more || '').trim(), link: n.link || '', linkLabel: n.link ? String(n.linkLabel || '').trim() || '자세히 보기' : '', start: n.start || '', end: n.end || '', updatedAt: new Date().toISOString() };
-        if (AA.store.set(AA.KEYS.notice, rec)) { nu.work = null; AA.toast('저장했습니다 — 이 브라우저의 데모 사이트 띠배너에 반영됩니다'); AA.rerender(); }
+        if (AA.store.set(AA.KEYS.notice, rec)) { nu.work = null; AA.toast('저장했습니다 — 이 브라우저에서 여는 홈페이지 띠배너에만 반영됩니다'); AA.rerender(); }
       },
       'nt-reset': function () { AA.store.del(AA.KEYS.notice); nu.work = null; AA.toast('기본 띠배너로 되돌렸습니다'); AA.rerender(); },
     },
@@ -304,21 +304,20 @@
       var Hm = AA.seed.home || {};
       var photos = Hm.heroPhotos || [];
       var cur = photos.filter(function (p) { return p.name === m.hero; })[0] || photos[0] || {};
-      var reach = {};
-      ((AA.seed.conversion || {}).sections || []).forEach(function (s) { reach[s.id] = s.all; });
+      var reach = {}; // 구간까지 내려온 방문 비율 — 실제 방문 기록이 연결되면 채운다(지금은 비워 둔다)
       var label = {};
       (Hm.sections || []).forEach(function (s) { label[s.id] = s.label; });
       var H = AA.seed.hospital;
       return AA.head({ no: AA.no('main'), eyebrow: '사이트 설정', title: '메인 화면',
-        lead: '홈 첫 화면 사진과 구간 순서·보이기를 정합니다. 구간마다 방문자가 얼마나 내려오는지(전환 개선 예시)를 함께 보면서 순서를 바꿀 수 있습니다.',
+        lead: '홈 첫 화면 사진과 구간 순서·보이기를 정합니다.',
         actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="../" target="_blank" rel="noopener">홈 보기<span class="ad-sr"> (새 창)</span></a>' }) +
-        AA.localNote('홈은 미리 만들어진 페이지라 데모에서는 저장해도 바뀌지 않습니다(띠배너·진료시간만 바로 반영)') +
+        AA.localNote('홈은 미리 만들어 둔 페이지라 여기서 저장해도 바뀌지 않습니다. 바꾸려면 운영 담당자에게 알려 주세요') +
         '<div class="ad-grid ad-grid--even ad-sec"><section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:12px">첫 화면 미리보기</h2>' +
         '<div class="ad-hero-pv">' + (cur.file ? '<img src="../' + esc(cur.file) + '" alt="' + esc(cur.alt || cur.caption || '') + '">' : '') + '<div class="ad-hero-pv__panel"><p class="ad-hero-pv__t">' + esc(H.name) + '<br>' + esc(H.founded) + '년부터, 부천에서<br>진료해 왔습니다</p></div></div>' +
         '<p class="ad-field__hint" style="margin-top:8px">사진 설명: ' + esc(cur.caption || '') + '. 제목과 첫 문단은 병원 데이터(개원 연도·진료과·의료진 수·야간진료)에서 자동으로 만듭니다.</p></section>' +
         '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:4px">첫 화면 사진</h2><p class="ad-field__hint" style="margin-bottom:12px">병원 실사만 고를 수 있습니다(연출 모델 사진·치료 전후 사진은 쓰지 않습니다).</p><div class="ad-photos" role="radiogroup" aria-label="첫 화면 사진">' +
         photos.map(function (p) { return '<label class="ad-photo"><input type="radio" name="hero" value="' + esc(p.name) + '"' + (p.name === m.hero ? ' checked' : '') + ' data-change="mn-hero"><span class="ad-photo__img"><img src="../' + esc(p.file) + '" alt="" decoding="async"></span><span class="ad-photo__on">사용 중</span><span class="ad-photo__cap">' + esc(p.caption) + '</span></label>'; }).join('') + '</div></section></div>' +
-        '<div class="ad-grid ad-grid--2 ad-sec"><section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">구간 순서·보이기</h2><p class="ad-card__sub">기승전결 순서 · 오른쪽 숫자는 그 구간까지 내려온 방문 비율(예시)</p></div></div><ol class="ad-order">' +
+        '<div class="ad-grid ad-grid--2 ad-sec"><section class="ad-card"><div class="ad-card__head"><div><h2 class="ad-card__title">구간 순서·보이기</h2><p class="ad-card__sub">위에서 아래로 보이는 순서</p></div></div><ol class="ad-order">' +
         m.sections.map(function (s, i) {
           var first = s.id === 'hero';
           return '<li class="' + (s.show ? '' : 'is-hidden') + '"><span class="ad-order__no">' + String(i + 1).padStart(2, '0') + '</span><span class="ad-order__name">' + esc(label[s.id] || s.id) + '<code>' + esc(s.id) + '</code></span>' +
@@ -367,7 +366,7 @@
       naverBooking: H.links.naverBooking, naverPlace: H.links.naverPlace, kakaoChannel: H.links.kakaoChannel, blog: H.links.blog, youtube: H.links.youtube };
   }
   function hospGet() { var s = AA.store.get(AA.KEYS.hospital, null); return Object.assign(hospBase(), (s && s.info) || {}); }
-  function naverGet() { var s = AA.store.get(AA.KEYS.hospital, null); var ex = AA.seed.naverPlaceExample || {}; return Object.assign({ name: ex.name, phone: ex.phone, address: ex.address, hours: ex.hours, homepage: ex.homepage, closed: ex.closed }, (s && s.naver) || {}); }
+  function naverGet() { var s = AA.store.get(AA.KEYS.hospital, null); return Object.assign({ name: '', phone: '', address: '', hours: '', homepage: '', closed: '' }, (s && s.naver) || {}); }
   function siteHoursText() {
     var H = AA.hours.get();
     return [1, 2, 3, 4, 5, 6, 0].map(function (n) { var x = H.days[n]; return AA.DOW[n] + ' ' + (x && x.on ? x.o + ' - ' + x.c : '휴무'); }).join('\n');
@@ -411,7 +410,7 @@
         AA.localNote() +
         '<section class="ad-card ad-sec" aria-labelledby="nap-t"><div class="ad-card__head"><div><h2 class="ad-card__title" id="nap-t">네이버 플레이스와 글자 일치 점검</h2><p class="ad-card__sub">상호명·전화·주소·영업시간을 한 글자까지 맞추면 AI 답변과 지도 검색이 같은 병원으로 묶습니다</p></div>' +
         '<span id="nap-badge" class="ad-badge ' + (diff ? 'ad-badge--flag' : 'ad-badge--done') + '" aria-live="polite">' + (diff ? icon('warn') + '다른 곳 ' + diff + '개' : icon('check') + '모두 일치') + '</span></div>' +
-        AA.exampleNote(esc((AA.seed.naverPlaceExample || {}).note || '') + ' 띄어쓰기·하이픈·주소 앞머리(https://, www.) 차이는 같은 것으로 봅니다.') +
+        '<p class="ad-note"><span>' + icon('info') + '</span><span>네이버 플레이스에 적힌 글자를 그대로 붙여 넣어 점검하세요. 띄어쓰기·하이픈·주소 앞머리(https://, www.) 차이는 같은 것으로 봅니다.</span></p>' +
         '<div class="ad-table-wrap" style="margin-top:12px"><table class="ad-nap"><colgroup><col class="c-k"><col><col><col class="c-res"></colgroup><thead><tr><th scope="col">항목</th><th scope="col">홈페이지</th><th scope="col">네이버 플레이스(붙여 넣기)</th><th scope="col">결과</th></tr></thead><tbody>' +
         rows.map(function (r) {
           var same = normNap(r[2]) === normNap(r[3]);

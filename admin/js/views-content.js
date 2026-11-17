@@ -1,4 +1,4 @@
-/* 관리자 데모 — 콘텐츠: 의료진 · 진료 페이지 · 질문 답 페이지 · 건강정보·칼럼 · 소식 게시판 · 리뷰 활용(검토 전 아이디어 — 리뷰 글은 싣지 않음) */
+/* 관리자 — 콘텐츠: 의료진 · 진료 페이지 · 질문 답 페이지 · 소식 게시판 · 리뷰 활용(검토 전 아이디어 — 리뷰 글은 싣지 않음) */
 (function () {
   'use strict';
   var w = window;
@@ -79,7 +79,7 @@
           return '<button class="ad-chip" type="button" aria-pressed="' + (du.dept === dp.id) + '" data-act="doc-dept" data-dept="' + esc(dp.id) + '">' + esc(dp.name) + ' <span class="ad-chip__n">' + n + '</span></button>';
         }).join('') + '</div>' +
         '<ul class="ad-docs">' + shown.map(function (x) { return docCard(x, list.indexOf(x), list.length); }).join('') + '</ul>' +
-        '<p class="ad-field__hint" style="margin-top:14px">순서를 바꾸면 의료진 소개 페이지의 기본 순서가 됩니다(데모는 이 브라우저에만 저장). 사진 교체는 실서비스 단계에서 병원 실사로만 합니다.</p>';
+        '<p class="ad-field__hint" style="margin-top:14px">여기서 바꾼 순서는 아직 이 브라우저에만 남습니다. 의료진 소개 페이지 순서를 바꾸거나 사진을 바꾸려면 운영 담당자에게 알려 주세요(사진은 병원 실사만 씁니다).</p>';
     },
     on: {
       'doc-dept': function (el) { du.dept = el.getAttribute('data-dept'); AA.rerender(); },
@@ -394,154 +394,6 @@
   };
 
   // ════════════════════════════════════════════════════════════════════════
-  // 건강정보·칼럼 — 매일 자동 초안 → 검수 → 승인 → 게시(금칙어가 남으면 승인 불가)
-  // ════════════════════════════════════════════════════════════════════════
-  var COL_STATUS = { review: '검수 대기', changes: '수정 요청', approved: '승인', published: '게시됨', rejected: '반려' };
-  var COL_ORDER = ['review', 'changes', 'approved', 'published', 'rejected'];
-  AA.columns = {
-    list: function () {
-      var ov = AA.store.get(AA.KEYS.columns, {}) || {};
-      var drafts = ((AA.seed.forbiddenCheck || {}).drafts || []).map(function (x) {
-        var o = ov[x.id] || {};
-        var y = AA.clone(x);
-        ['title', 'area', 'body', 'status', 'memo'].forEach(function (k) { if (o[k] != null) y[k] = o[k]; });
-        if (Array.isArray(o.history)) y.history = y.history.concat(o.history);
-        y.edited = !!(o.title || o.body);
-        return y;
-      });
-      return drafts.sort(function (a, b) { return b.date.localeCompare(a.date); });
-    },
-    set: function (id, patch, histStatus) {
-      var ov = AA.store.get(AA.KEYS.columns, {}) || {};
-      var o = Object.assign({}, ov[id] || {}, patch);
-      if (histStatus) o.history = (o.history || []).concat([{ at: new Date().toISOString(), status: histStatus, by: '데모 관리자' }]);
-      ov[id] = o;
-      AA.store.set(AA.KEYS.columns, ov);
-    },
-  };
-  AA.badges.columns = function () { return AA.columns.list().filter(function (c) { return c.status === 'review' || c.status === 'changes'; }).length; };
-  var cu = { status: '' };
-  function colBadge(s) {
-    var cls = { review: 'contacted', changes: 'warn', approved: 'ink', published: 'done', rejected: 'spam' }[s] || 'plain';
-    return '<span class="ad-badge ad-badge--' + cls + '">' + (s === 'published' ? icon('check') : '') + esc(COL_STATUS[s] || s) + '</span>';
-  }
-  function colText(c) { return [c.title].concat(c.body || []).join('\n'); }
-  AA.views.columns = {
-    render: function (r) {
-      var all = AA.columns.list();
-      if (r.param) return colEditor(all.filter(function (c) { return c.id === r.param; })[0]);
-      var list = all.filter(function (c) { return !cu.status || c.status === cu.status; });
-      return AA.head({ no: AA.no('columns'), eyebrow: '콘텐츠', title: '건강정보·칼럼',
-        lead: '사이트 진료 안내와 질문 답을 바탕으로 매일 오전 6시에 칼럼 초안이 자동으로 올라옵니다. 의료진이 검수하고 승인해야 게시되며, 의료광고 금칙어가 남은 초안은 승인할 수 없습니다.' }) +
-        '<p class="ad-flow" style="margin-bottom:14px" aria-label="처리 순서"><span class="ad-flow__s">' + icon('clock') + '매일 06:00 자동 초안</span><span class="ad-flow__s">금칙어 자동 표시</span><span class="ad-flow__s">의료진 검수</span><span class="ad-flow__s">승인</span><span class="ad-flow__s">게시</span></p>' +
-        AA.exampleNote('자동 초안은 예시입니다. 실제 연결 시 그로스메이트가 사이트 데이터에서 초안을 만들고, 게시는 승인한 글만 합니다. 데모에서는 게시해도 사이트에 실리지 않습니다.') +
-        '<div class="ad-pipe" role="group" aria-label="상태로 거르기" style="margin-top:14px">' + COL_ORDER.map(function (s) {
-          var n = all.filter(function (c) { return c.status === s; }).length;
-          return '<button class="ad-pipe__s" type="button" aria-pressed="' + (cu.status === s) + '" data-act="col-filter" data-s="' + s + '"><span class="ad-pipe__k">' + esc(COL_STATUS[s]) + '</span><span class="ad-pipe__n">' + n + '</span></button>';
-        }).join('') + '</div>' +
-        (cu.status ? '<p style="margin:-6px 0 10px"><button class="ad-link" type="button" data-act="col-filter" data-s="">모든 상태 보기</button></p>' : '') +
-        '<div class="ad-table-wrap"><table class="ad-table ad-table--cards"><thead><tr><th>날짜</th><th>제목</th><th>분야</th><th>금칙어</th><th>상태</th><th><span class="ad-sr">동작</span></th></tr></thead><tbody>' +
-        list.map(function (c) {
-          var n = AA.rules.count(colText(c));
-          return '<tr class="no-check' + (c.status === 'review' ? ' is-new' : '') + '"><td data-label="날짜" class="tnum nw">' + esc(AA.fmt.date(c.date)) + '</td>' +
-            '<td class="cell-head t-wrap" data-label="제목"><a class="ad-rowbtn" href="#/columns/' + esc(c.id) + '">' + esc(c.title) + '</a>' + (c.auto ? ' <span class="ad-badge ad-badge--example">자동 초안</span>' : '') + '</td>' +
-            '<td data-label="분야">' + esc(c.area) + '</td>' +
-            '<td data-label="금칙어">' + (n ? '<span class="ad-badge ad-badge--flag">' + icon('warn') + n + '곳</span>' : '<span class="ad-rules__ok" style="font-size:14px">' + icon('check') + '없음</span>') + '</td>' +
-            '<td data-label="상태">' + colBadge(c.status) + '</td>' +
-            '<td data-label="" class="nw"><a class="ad-btn ad-btn--line ad-btn--sm" href="#/columns/' + esc(c.id) + '">' + (c.status === 'review' || c.status === 'changes' ? '검수하기' : '열기') + '</a></td></tr>';
-        }).join('') + '</tbody></table></div>';
-    },
-    on: {
-      'col-filter': function (el) { cu.status = cu.status === el.getAttribute('data-s') ? '' : el.getAttribute('data-s'); AA.rerender(); },
-      'col-live': function () {
-        var t = d.getElementById('col-title'); var b = d.getElementById('col-body');
-        var title = t ? t.value : ''; var body = b ? b.value : '';
-        var paras = body.split(/\n\s*\n/).map(function (s) { return s.trim(); }).filter(Boolean);
-        var pv = d.getElementById('col-pv'); if (pv) pv.innerHTML = '<p class="ad-preview__t">' + AA.rules.highlight(title) + '</p>' + paras.map(function (p) { return '<p>' + AA.rules.highlight(p) + '</p>'; }).join('');
-        var rp = d.getElementById('col-rules'); if (rp) rp.innerHTML = AA.rules.report(title + '\n' + body, '의료광고 금칙어 없음 — 승인할 수 있습니다');
-        var n = AA.rules.count(title + '\n' + body);
-        var ap = d.getElementById('col-approve'); if (ap) { ap.disabled = n > 0; ap.title = n ? '금칙어를 고친 뒤 승인할 수 있습니다' : ''; }
-        var m = d.getElementById('col-msg'); if (m) { m.textContent = '고친 내용이 있습니다 — 저장하거나 바로 승인하세요'; m.classList.add('is-dirty'); }
-      },
-      'col-save': function (el) { saveCol(el.getAttribute('data-id'), null); AA.toast('고친 내용을 저장했습니다'); AA.rerender(); },
-      'col-approve': function (el) {
-        var id = el.getAttribute('data-id');
-        if (!saveCol(id, null)) return;
-        var c = AA.columns.list().filter(function (x) { return x.id === id; })[0];
-        if (AA.rules.count(colText(c))) { AA.toast('금칙어를 고친 뒤 승인할 수 있습니다'); return; }
-        AA.columns.set(id, { status: 'approved' }, 'approved'); AA.toast('승인했습니다 — 게시를 누르면 공개됩니다'); AA.rerender();
-      },
-      'col-changes': function (el) {
-        var id = el.getAttribute('data-id'); var memo = (d.getElementById('col-memo') || {}).value || '';
-        if (!memo.trim()) { AA.toast('수정 요청 내용을 검수 의견에 적어 주세요'); var m = d.getElementById('col-memo'); if (m) m.focus(); return; }
-        saveCol(id, null); AA.columns.set(id, { status: 'changes', memo: memo.trim() }, 'changes'); AA.toast('수정 요청을 남겼습니다'); AA.rerender();
-      },
-      'col-reject': function (el) {
-        var id = el.getAttribute('data-id');
-        AA.confirm({ title: '이 초안을 반려할까요?', msg: '반려한 초안은 게시되지 않습니다. 나중에 검수로 되돌릴 수 있습니다.', ok: '반려', danger: true }).then(function (y) {
-          if (!y) return; var memo = (d.getElementById('col-memo') || {}).value || '';
-          AA.columns.set(id, { status: 'rejected', memo: memo.trim() }, 'rejected'); AA.toast('반려했습니다'); AA.rerender();
-        });
-      },
-      'col-publish': function (el) { var id = el.getAttribute('data-id'); AA.columns.set(id, { status: 'published' }, 'published'); AA.toast('게시했습니다(데모 — 사이트에는 실리지 않습니다)'); AA.rerender(); },
-      'col-back': function (el) { var id = el.getAttribute('data-id'); AA.columns.set(id, { status: 'review' }, 'review'); AA.toast('검수 대기로 되돌렸습니다'); AA.rerender(); },
-      'col-unpublish': function (el) { var id = el.getAttribute('data-id'); AA.columns.set(id, { status: 'approved' }, 'approved'); AA.toast('게시를 내렸습니다'); AA.rerender(); },
-      'col-fix': function (el) {
-        var b = d.getElementById('col-body'); var t = d.getElementById('col-title'); if (!b) return;
-        var fix = function (s) {
-          return s.replace(/최고의\s*의료진이\s*정밀하게\s*진단하므로\s*통증\s*없는\s*임플란트\s*치료가\s*가능합니다\.?/g, '마취 방법은 진찰 후 미리 상의하며, 회복 과정은 개인 상태에 따라 다를 수 있습니다.')
-            .replace(/[^.\n]*(할인|이벤트|특가|쿠폰|선착순|사은품|프로모션)[^.\n]*\.\s*/g, '')
-            .replace(/최고의\s*의료진/g, '보건복지부 인증 전문의를 포함한 의료진').replace(/통증\s*없는/g, '마취 방법을 미리 상의하는');
-        };
-        b.value = fix(b.value); if (t) t.value = fix(t.value);
-        b.dispatchEvent(new Event('input', { bubbles: true }));
-        AA.toast('추천 문장으로 바꿨습니다 — 내용을 확인하고 저장하세요');
-      },
-    },
-  };
-  function saveCol(id, status) {
-    var t = d.getElementById('col-title'); var b = d.getElementById('col-body'); var a = d.getElementById('col-area'); var m = d.getElementById('col-memo');
-    if (!t || !b) return true;
-    var body = b.value.split(/\n\s*\n/).map(function (s) { return s.trim(); }).filter(Boolean);
-    if (!t.value.trim() || !body.length) { AA.toast('제목과 본문을 비울 수 없습니다'); return false; }
-    var patch = { title: t.value.trim(), body: body, area: a ? a.value : undefined, memo: m ? m.value.trim() : undefined };
-    if (status) patch.status = status;
-    AA.columns.set(id, patch, null);
-    return true;
-  }
-  function colEditor(c) {
-    if (!c) return AA.head({ title: '건강정보·칼럼', back: { href: '#/columns', label: '칼럼 목록' } }) + AA.emptyHtml('초안을 찾을 수 없습니다');
-    var text = colText(c);
-    var n = AA.rules.count(text);
-    var editable = c.status === 'review' || c.status === 'changes';
-    var areas = ['임플란트', '치아교정', '예방관리', '구강내과', '구강외과', '일반진료', '충치·보철', '심미', '병원 이용'];
-    if (areas.indexOf(c.area) < 0) areas.push(c.area);
-    var btns = '';
-    if (editable) btns = '<button class="ad-btn ad-btn--line" type="button" data-act="col-save" data-id="' + esc(c.id) + '">고친 내용 저장</button><button class="ad-btn ad-btn--line" type="button" data-act="col-changes" data-id="' + esc(c.id) + '">수정 요청</button><button class="ad-btn ad-btn--danger" type="button" data-act="col-reject" data-id="' + esc(c.id) + '">반려</button><button class="ad-btn ad-btn--ink" type="button" id="col-approve" data-act="col-approve" data-id="' + esc(c.id) + '"' + (n ? ' disabled title="금칙어를 고친 뒤 승인할 수 있습니다"' : '') + '>' + icon('check') + '승인</button>';
-    else if (c.status === 'approved') btns = '<button class="ad-btn ad-btn--line" type="button" data-act="col-back" data-id="' + esc(c.id) + '">검수로 되돌리기</button><button class="ad-btn ad-btn--ink" type="button" data-act="col-publish" data-id="' + esc(c.id) + '">게시</button>';
-    else if (c.status === 'published') btns = '<button class="ad-btn ad-btn--line" type="button" data-act="col-unpublish" data-id="' + esc(c.id) + '">게시 내리기</button>';
-    else btns = '<button class="ad-btn ad-btn--line" type="button" data-act="col-back" data-id="' + esc(c.id) + '">검수로 되돌리기</button>';
-    var hist = (c.history || []).slice().sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
-    return AA.head({ back: { href: '#/columns', label: '칼럼 목록' }, eyebrow: AA.fmt.date(c.date) + ' · ' + c.area + (c.auto ? ' · 자동 초안' : ''), title: c.title, actions: colBadge(c.status) }) +
-      (n && editable ? '<p class="ad-note ad-note--warn" style="margin-bottom:14px"><span>' + icon('warn') + '</span><span><span class="ad-note__t">의료광고 금칙어 ' + n + '곳</span> — 고친 뒤에 승인할 수 있습니다. <button class="ad-link" type="button" data-act="col-fix">추천 문장으로 바꾸기</button></span></p>' : '') +
-      (c.memo ? '<p class="ad-note" style="margin-bottom:14px"><span>' + icon('info') + '</span><span><span class="ad-note__t">검수 의견</span> ' + esc(c.memo) + '</span></p>' : '') +
-      '<div class="ad-editor"><div class="ad-stack">' +
-      '<section class="ad-card"><div class="ad-form">' +
-      '<label class="ad-field"><span class="ad-field__label">제목</span><input class="ad-input" id="col-title" value="' + esc(c.title) + '" data-input="col-live"' + (editable ? '' : ' readonly') + '></label>' +
-      '<label class="ad-field"><span class="ad-field__label">분야</span><select class="ad-select" id="col-area"' + (editable ? '' : ' disabled') + '>' + areas.map(function (a) { return '<option' + (a === c.area ? ' selected' : '') + '>' + esc(a) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="ad-field"><span class="ad-field__label"><span>본문</span><small>문단 사이는 빈 줄</small></span><textarea class="ad-textarea ad-textarea--tall" id="col-body" rows="10" data-input="col-live"' + (editable ? '' : ' readonly') + '>' + esc((c.body || []).join('\n\n')) + '</textarea></label>' +
-      '<div class="ad-field"><span class="ad-field__label">근거 페이지 <small>초안이 사실을 가져온 곳</small></span><p class="ad-checks__pages" style="margin:0">' + (c.basis || []).map(function (p) { return AA.siteLink(p); }).join('') + '</p></div>' +
-      (editable ? '<label class="ad-field"><span class="ad-field__label">검수 의견 <small>수정 요청·반려할 때</small></span><textarea class="ad-textarea" id="col-memo" rows="2" placeholder="예: 환자를 끄는 표현을 지워 주세요">' + esc(c.memo || '') + '</textarea></label>' : '') +
-      '</div></section>' +
-      '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">처리 기록</h2><ol class="ad-timeline">' + hist.map(function (h) { return '<li><time datetime="' + esc(h.at) + '">' + esc(AA.fmt.dt(h.at)) + '</time>' + esc((h.status === 'review' && h.by === '자동 초안' ? '자동 초안 생성' : COL_STATUS[h.status] || h.status) + ' · ' + h.by) + '</li>'; }).join('') + '</ol></section>' +
-      '</div><aside class="ad-editor__side" aria-label="미리보기와 금칙어">' +
-      '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">미리보기</h2><div class="ad-preview" id="col-pv"><p class="ad-preview__t">' + AA.rules.highlight(c.title) + '</p>' + (c.body || []).map(function (p) { return '<p>' + AA.rules.highlight(p) + '</p>'; }).join('') + '</div></section>' +
-      '<section class="ad-card"><h2 class="ad-card__title" style="margin-bottom:10px">의료광고 금칙어</h2><div id="col-rules">' + AA.rules.report(text, '의료광고 금칙어 없음 — 승인할 수 있습니다') + '</div><p class="ad-field__hint" style="margin-top:10px">규칙은 의료법 제56조 요약과 같습니다(효과 보장·최상급·환자 유인·치료 경험담·과장 표현).</p></section>' +
-      '</aside></div>' +
-      '<div class="ad-savebar"><p class="ad-savebar__msg" id="col-msg" aria-live="polite">' + (editable ? '검수 중' : esc(COL_STATUS[c.status])) + '</p>' + btns + '</div>';
-  }
-
-  // ════════════════════════════════════════════════════════════════════════
   // 소식 게시판
   // ════════════════════════════════════════════════════════════════════════
   function newsList() {
@@ -624,7 +476,7 @@
 
   // ════════════════════════════════════════════════════════════════════════
   // 리뷰 활용 — 법률·의료광고 심의 검토 전 아이디어
-  //   환자가 쓴 리뷰 글은 이 데모(공개 JSON·HTML)에 싣지 않는다. 회원 공개·흐리게 가리기 미리보기도 두지 않는다
+  //   환자가 쓴 리뷰 글은 공개 파일(JSON·HTML)에 싣지 않는다. 회원 공개·흐리게 가리기 미리보기도 두지 않는다
   //   (새 사이트에는 회원 기능이 없고, 흐림 효과는 글을 HTML 에 그대로 남겨 검색·AI 로봇이 읽는다).
   //   화면은 검토할 점과, 싣기로 정할 때 지킬 설계 조건만 보여 준다.
   // ════════════════════════════════════════════════════════════════════════
@@ -645,7 +497,7 @@
       ];
       var li = function (x) { return '<li><span class="ad-idea__t">' + esc(x[0]) + '</span><span class="ad-idea__d">' + esc(x[1]) + '</span></li>'; };
       return AA.head({ no: AA.no('reviews'), eyebrow: '콘텐츠 · 검토 전 아이디어', title: '리뷰 활용',
-        lead: '네이버 플레이스 리뷰를 홈페이지에서 활용하는 방법은 법률·의료광고 심의 검토 전 아이디어입니다. 검토를 마치기 전에는 사이트에 리뷰를 싣지 않으며, 이 데모에도 리뷰 글을 넣지 않았습니다.',
+        lead: '네이버 플레이스 리뷰를 홈페이지에서 활용하는 방법은 법률·의료광고 심의 검토 전 아이디어입니다. 검토를 마치기 전에는 사이트에 리뷰를 싣지 않으며, 이 화면에도 리뷰 글을 넣지 않았습니다.',
         actions: '<a class="ad-btn ad-btn--line ad-btn--sm" href="' + esc(H.links.naverPlace) + '" target="_blank" rel="noopener">네이버 플레이스 열기<span class="ad-sr"> (새 창)</span></a>' }) +
         '<div class="ad-grid ad-grid--even">' +
         '<section class="ad-card" aria-labelledby="rv-risk-t"><h2 class="ad-card__title" id="rv-risk-t" style="margin-bottom:10px">먼저 검토할 점</h2><ol class="ad-idea">' + risks.map(li).join('') + '</ol></section>' +
