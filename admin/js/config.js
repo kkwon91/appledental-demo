@@ -1,1 +1,1 @@
-window.AA_OPS = {"url":"https://ops.dbartera.com/","site":"appledental"};
+window.AA_OPS = {"url":"https://ops.dbartera.com/","site":"appledental","demo":true};

@@ -101,6 +101,7 @@
     AA.session.set(false);
     AA.leads.cache = []; AA.leads.audits = {}; AA.leads.loadedAt = 0; AA.leads.state = 'idle'; // 개인정보를 화면 밖에도 남기지 않는다
     if (AA.sync) AA.sync.clear();
+    if (AA.stats) AA.stats.clear();
     AA.drawer.close(true);
     AA.navClose(true);
     try { w.history.replaceState(null, '', w.location.pathname + w.location.search); } catch (e) { w.location.hash = ''; }
